@@ -11,7 +11,7 @@
     "settings": {
         "import/parsers": {
             "@typescript-eslint/parser": [
-                ".ts"
+                ".js", ".ts"
             ]
         },
         "import/resolver": {

@@ -7,14 +7,6 @@
     "outDir": "output",
     "strict": true,
     "baseUrl": "./",
-    "paths": {
-      "@app/*": [
-        "src/app/*",
-      ],
-      "@controls": [
-        "src/app/controls/index"
-      ]
-    },
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "lib": ["dom", "es5", "es6"],

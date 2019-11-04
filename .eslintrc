@@ -14,13 +14,18 @@
             ]
         },
         "import/resolver": {
-            "typescript": {}
+            "node": {
+              "extensions": [".js", ".ts"]
+            }
         }
     },
     "rules": {
+        "@typescript-eslint/interface-name-prefix": "off",
+        "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/indent": [
             2,
             2
-        ]
+        ],
+        "no-underscore-dangle": "off"
     }
 }

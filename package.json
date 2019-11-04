@@ -5,8 +5,8 @@
   "scripts": {
     "start": "npm run lint && npm-run-all --parallel test-watch serve-dev",
     "build": "npm run lint && npm run test && npm run assemble-release",
-    "lint": "./node_modules/.bin/eslint --ext .jsx,.js --quiet src/",
-    "lint:fix": "npm run lint --fix",
+    "lint": "./node_modules/.bin/eslint --ext .ts,.js --quiet src/",
+    "lint-fix": "./node_modules/.bin/eslint --ext .ts,.js --quiet --fix src/",
     "tslint-check": "tslint-config-prettier-check ./tslint.json",
     "assemble-release": "./node_modules/.bin/webpack --config ./webpack.prod.js --env.NODE_ENV=production --progress",
     "serve-dev": "./node_modules/.bin/webpack-dev-server --open --colors --hot --inline --config ./webpack.dev.js --env.NODE_ENV=development --progress",

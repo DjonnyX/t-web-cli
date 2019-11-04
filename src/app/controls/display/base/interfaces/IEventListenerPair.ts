@@ -1,5 +1,5 @@
 interface IEventListenerPair {
-    type: string;
-    listener: EventListenerOrEventListenerObject;
+  type: string;
+  listener: EventListenerOrEventListenerObject;
 }
 export default IEventListenerPair;

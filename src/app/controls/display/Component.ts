@@ -1,5 +1,5 @@
-import { IComponentOptions } from "./interfaces";
 import ElementRef from "./base/ElementRef";
+import { IComponentOptions } from "./interfaces";
 
 const DEFAULT_NATIVE_ELEMENT_TYPE = "div";
 
@@ -7,17 +7,15 @@ const DEFAULT_NATIVE_ELEMENT_TYPE = "div";
  * Component
  */
 export default class Component {
+  public readonly element: ElementRef<any>;
 
-    public readonly element: ElementRef<any>;
-    
-    public readonly elementType: keyof HTMLElementTagNameMap;
+  public readonly elementType: keyof HTMLElementTagNameMap;
 
-	public constructor(options?: IComponentOptions) {
-        this.elementType = options && options.elementRefType ? options.elementRefType : DEFAULT_NATIVE_ELEMENT_TYPE;
-		this.element = ElementRef.new(this.elementType);
-	}
-
-	public dispose() {
-        
-	}
+  public constructor(options?: IComponentOptions) {
+    this.elementType =
+      options && options.elementRefType
+        ? options.elementRefType
+        : DEFAULT_NATIVE_ELEMENT_TYPE;
+    this.element = ElementRef.new(this.elementType);
+  }
 }

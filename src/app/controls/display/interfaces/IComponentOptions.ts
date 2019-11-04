@@ -1,4 +1,4 @@
 interface IComponentOptions {
-    elementRefType?: keyof HTMLElementTagNameMap
+	elementRefType?: keyof HTMLElementTagNameMap;
 }
 export default IComponentOptions;

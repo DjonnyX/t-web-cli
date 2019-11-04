@@ -2,5 +2,6 @@ import App from "./App";
 
 test("The App must be initialized.", () => {
   const app = new App();
-  expect(document.contains(app.nativeElement.element)).toBeDefined();
+  
+  expect(document.contains(app.nativeElement.element || null)).toBeDefined();
 });

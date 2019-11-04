@@ -11,13 +11,11 @@
     "settings": {
         "import/parsers": {
             "@typescript-eslint/parser": [
-                ".ts"
+                ".js", ".ts"
             ]
         },
         "import/resolver": {
-            "node": {
-              "extensions": [".ts"]
-            }
+            "typescript": {}
         }
     },
     "rules": {

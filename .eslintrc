@@ -5,7 +5,8 @@
     "parser": "@typescript-eslint/parser",
     "plugins": [
         "@typescript-eslint",
-        "prettier"
+        "prettier",
+        "jest-dom"
     ],
     "settings": {
         "import/parsers": {
@@ -14,13 +15,19 @@
             ]
         },
         "import/resolver": {
-            "typescript": {}
+            "node": {
+              "extensions": [".ts"]
+            }
         }
     },
     "rules": {
+        "@typescript-eslint/interface-name-prefix": "off",
+        "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/indent": [
-            2,
-            2
-        ]
+            "off",
+            "tab"
+        ],
+        "curly": ["error", "multi-line"],
+        "no-underscore-dangle": "off"
     }
 }

@@ -6,16 +6,18 @@ const DEFAULT_NATIVE_ELEMENT_TYPE = "div";
 /**
  * Component
  */
-export default class Component {
-  public readonly element: ElementRef<any>;
+export default class Component<E extends keyof HTMLElementTagNameMap>  {
+  public readonly nativeElement: ElementRef<E>;
 
-  public readonly elementType: keyof HTMLElementTagNameMap;
+  public readonly elementType: E = DEFAULT_NATIVE_ELEMENT_TYPE as any;
 
   public constructor(options?: IComponentOptions) {
-    this.elementType =
-      options && options.elementRefType
-        ? options.elementRefType
-        : DEFAULT_NATIVE_ELEMENT_TYPE;
-    this.element = ElementRef.new(this.elementType);
+
+	if (options && options.elementRefType) {
+		this.elementType = options.elementRefType as any;
+	}
+    
+
+	this.nativeElement = ElementRef.new(this.elementType);
   }
 }

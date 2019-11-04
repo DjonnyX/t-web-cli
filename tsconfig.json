@@ -1,20 +1,21 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "commonjs",
+    "target": "es5",
+    "module": "esnext",
+    "moduleResolution": "node",
     "declaration": true,
-    "outDir": "lib",
+    "outDir": "output",
     "strict": true,
     "baseUrl": "./",
-    "paths": {
-      "@app/*": [
-        "src/app/*"
-      ],
-      "@controls": [
-        "src/app/controls/index"
-      ]
-    },
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-  }
+    "lib": ["dom", "es5", "es6"],
+  },
+  "include": [
+    "./src/**/*"
+  ],
+  "exclude": [
+    "./src/**/*.spec.ts"
+  ],
+  "compileOnSave": false
 }

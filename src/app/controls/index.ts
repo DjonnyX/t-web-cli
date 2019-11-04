@@ -1,7 +1,8 @@
 import * as display from "./display";
+import * as utils from "./utils";
 
 /**
  * UI kit
  */
-export { display };
 export { Component } from "./display";
+export { display, utils };

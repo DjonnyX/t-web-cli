@@ -1,6 +1,6 @@
 import { Errors } from "../../runtime";
-import IEventListenerPair from "./interfaces/IEventListenerPair";
 import IElementRefDisposeOptions from "./interfaces/IElementRefDisposeOptions";
+import IEventListenerPair from "./interfaces/IEventListenerPair";
 
 /**
  * ElementRef
@@ -11,14 +11,18 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
    * Creating a new native element from pool or direct creation
    * @param {E} type
    */
-  public static new<E extends keyof HTMLElementTagNameMap>(type: E) {
+  public static new<E extends keyof HTMLElementTagNameMap>(
+    type: E
+  ): ElementRef<E> {
     const elementRef = this.__fromPool(type);
-    if (elementRef) return elementRef;
+    if (elementRef) {
+      return elementRef;
+    }
 
     return new ElementRef(type);
   }
 
-  private static _typedPool = new Map<
+  private static __pool = new Map<
     keyof HTMLElementTagNameMap,
     Array<ElementRef<keyof HTMLElementTagNameMap>>
   >();
@@ -28,12 +32,14 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
    * @param {E} type
    * @param {ElementRef<E>} elementRef
    */
-  private static __fromPool<E extends keyof HTMLElementTagNameMap>(type: E) {
-    const pool = this._typedPool.get(type);
+  private static __fromPool<E extends keyof HTMLElementTagNameMap>(
+    type: E
+  ): ElementRef<E> | undefined {
+    const pool = this.__pool.get(type);
     if (pool && pool.length) {
       const el = pool.shift();
       if (el) {
-        return el;
+        return el as ElementRef<E>;
       }
     }
 
@@ -48,14 +54,17 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
   private static __toPool<E extends keyof HTMLElementTagNameMap>(
     type: E,
     elementRef: ElementRef<E>
-  ) {
-    const pool = ElementRef._typedPool.get(type);
+  ): void {
+    const pool = ElementRef.__pool.get(type);
     if (!pool) {
-      ElementRef._typedPool.set(type, [elementRef]);
+      ElementRef.__pool.set(type, [elementRef]);
     } else {
       pool.push(elementRef);
     }
   }
+
+  protected _element: HTMLElementTagNameMap[E] | undefined;
+  public get element(): HTMLElementTagNameMap[E] | undefined { return this._element; }
 
   private _listenerTypesMap = new Map<
     string,
@@ -63,8 +72,6 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
   >();
 
   private _listeners = new Array<IEventListenerPair>();
-
-  private _element: HTMLElementTagNameMap[E] | undefined;
 
   /**
    * @param {E} type
@@ -83,7 +90,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
     type: string,
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions | undefined
-  ) {
+  ): void {
     if (!this._element) {
       throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
     }
@@ -97,7 +104,9 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
     }
 
     const pool = this._listenerTypesMap.get(type);
-    if (pool && pool.indexOf(listener) === -1) pool.push(listener);
+    if (pool && pool.indexOf(listener) === -1) {
+      pool.push(listener);
+    }
   }
 
   /**
@@ -109,16 +118,22 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
   public removeListener(
     type: string,
     listener: EventListenerOrEventListenerObject
-  ) {
-    if (!this._element) throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
+  ): void {
+    if (!this._element) {
+      throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
+    }
 
     this._element.removeEventListener(type, listener);
 
     const pool = this._listenerTypesMap.get(type);
-    if (!pool) return;
+    if (!pool) {
+      return;
+    }
 
     const index = pool.indexOf(listener);
-    if (index === -1) return;
+    if (index === -1) {
+      return;
+    }
 
     pool.splice(index, 1);
   }
@@ -126,13 +141,17 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
   /**
    * Remove all event listeners
    */
-  public removeAllListeners() {
-    if (!this._element) throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
+  public removeAllListeners(): void {
+    if (!this._element) {
+      throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
+    }
 
     while (this._listeners.length) {
       const item = this._listeners.shift();
 
-      if (!item) continue;
+      if (!item) {
+        continue;
+      }
 
       this._element.removeEventListener(item.type, item.listener);
     }
@@ -141,22 +160,29 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
     this._listenerTypesMap.clear();
   }
 
-  public dispose(options?: IElementRefDisposeOptions) {
-    if (!this._element) throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
+  public dispose(options?: IElementRefDisposeOptions): void {
+    if (!this._element) {
+      throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
+    }
 
     ElementRef.__toPool(this.type, this);
 
     this.removeAllListeners();
 
-    if (!options) return;
+    if (!options) {
+      return;
+    }
 
-    if (options.clearClasses)
-      this._element.classList.remove(...this._element.classList);
+    if (options.clearClasses) {
+      // this._element.classList.remove(...this._element.classList);
+    }
 
-    if (options.clearInlineStyles) this._element.removeAttribute("style");
+    if (options.clearInlineStyles) {
+      this._element.removeAttribute("style");
+    }
   }
 
-  private _createNativeElement() {
+  private _createNativeElement(): void {
     this._element = document.createElement<E>(this.type);
   }
 }

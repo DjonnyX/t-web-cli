@@ -6,7 +6,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = env => {
   return {
     entry: {
-      main: ["./src/index.ts"]
+      main: ["@babel/polyfill", "./src/index.ts"]
     },
     plugins: [
       new CleanWebpackPlugin(),

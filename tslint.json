@@ -1,9 +1,23 @@
 {
     "defaultSeverity": "error",
     "extends": [
-        "tslint:recommended"
+        "tslint:recommended",
+        "tslint-config-prettier"
     ],
     "jsRules": {},
-    "rules": {},
+    "rules": {
+        "curly": false,
+        "variable-name": {
+            "options": [
+                "check-format",
+                "allow-leading-underscore",
+                "allow-pascal-case",
+                "allow-snake-case",
+                "allow-trailing-underscore",
+                "require-const-for-all-caps",
+                "ban-keywords"
+            ]
+        }
+    },
     "rulesDirectory": []
 }

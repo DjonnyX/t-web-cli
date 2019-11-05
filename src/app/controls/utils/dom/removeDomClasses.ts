@@ -1,7 +1,6 @@
 const removeDomClasses = (element: HTMLElement): HTMLElement => {
-  element.classList.forEach((domClass: string) => {
-    element.classList.remove(domClass);
-  });
+  const classes = Array.from(element.classList.values());
+  element.classList.remove(...classes);
 
   return element;
 };

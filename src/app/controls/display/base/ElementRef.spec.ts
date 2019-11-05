@@ -206,7 +206,7 @@ describe("ElementRef removeAllListeners", () => {
 
     for (let i = 0, l = 20; i < l; i++) {
       elRef.addListener(
-        String.fromCharCode(Math.ceil(Math.random() * 100)),
+        String(i),
         testHandler
       );
     }

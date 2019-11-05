@@ -1,5 +1,9 @@
 import { Errors } from "../../runtime";
-import { removeDomClasses } from "../../utils/dom";
+import {
+  removeAttributes,
+  removeChildren,
+  removeDomClasses
+} from "../../utils/dom";
 import IElementRefDisposeOptions from "./interfaces/IElementRefDisposeOptions";
 
 /**
@@ -64,7 +68,9 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
   }
 
   protected _element: HTMLElementTagNameMap[E] | undefined;
-  public get element(): HTMLElementTagNameMap[E] | undefined { return this._element; }
+  public get element(): HTMLElementTagNameMap[E] | undefined {
+    return this._element;
+  }
 
   protected _listenerTypesMap = new Map<
     string,
@@ -142,17 +148,19 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
       throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
     }
 
-    this._listenerTypesMap.forEach((listeners: EventListenerOrEventListenerObject[], key: string) => {
-      while (listeners.length) {
-        const listener = listeners.shift();
+    this._listenerTypesMap.forEach(
+      (listeners: EventListenerOrEventListenerObject[], key: string) => {
+        while (listeners.length) {
+          const listener = listeners.shift();
 
-        if (!(listener && this._element)) {
-          continue;
+          if (!(listener && this._element)) {
+            continue;
+          }
+
+          this._element.removeEventListener(key, listener);
         }
-
-        this._element.removeEventListener(key, listener);
       }
-    })
+    );
 
     // clear map
     this._listenerTypesMap.clear();
@@ -175,7 +183,15 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
       removeDomClasses(this._element);
     }
 
-    if (options.clearInlineStyles) {
+    if (options.clearAttribute) {
+      removeAttributes(this._element);
+    }
+
+    if (options.clearInnerHtml) {
+      removeChildren(this._element);
+    }
+
+    if (!options.clearAttribute && options.clearInlineStyles) {
       this._element.removeAttribute("style");
     }
   }

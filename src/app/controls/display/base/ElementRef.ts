@@ -67,8 +67,8 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
     }
   }
 
-  protected _element: HTMLElementTagNameMap[E] | undefined;
-  public get element(): HTMLElementTagNameMap[E] | undefined {
+  protected _element!: HTMLElementTagNameMap[E];
+  public get element(): HTMLElementTagNameMap[E] {
     return this._element;
   }
 
@@ -88,7 +88,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
    * Add listeners
    * @param {string} type
    * @param {EventListenerOrEventListenerObject} listener
-   * @param {boolean | AddEventListenerOptions | undefined} options
+   * @param {boolean | AddEventListenerOptions} options
    */
   public addListener(
     type: string,

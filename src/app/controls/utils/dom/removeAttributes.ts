@@ -1,14 +1,9 @@
 const removeAttributes = (element: HTMLElement): HTMLElement => {
   const attrs = element.attributes;
-  const attrNames = [];
-  for (const attr of attrs) {
-    attrNames.push(attr.name);
-  }
-  while (attrNames.length) {
-    const attrName = attrNames.pop();
-
-    if (attrName) {
-      element.removeAttribute(attrName);
+  for(let i = attrs.length - 1; i >= 0; i--) {
+    const attr = attrs.item(i);
+    if (attr) {
+      element.removeAttribute(attr.name);
     }
   }
 

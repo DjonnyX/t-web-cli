@@ -1,6 +1,6 @@
 import { Errors } from "../../runtime";
+import { removeDomClasses } from "../../utils/dom";
 import IElementRefDisposeOptions from "./interfaces/IElementRefDisposeOptions";
-import IEventListenerPair from "./interfaces/IEventListenerPair";
 
 /**
  * ElementRef
@@ -71,8 +71,6 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
     EventListenerOrEventListenerObject[]
   >();
 
-  protected _listeners = new Array<IEventListenerPair>();
-
   /**
    * @param {E} type
    */
@@ -86,7 +84,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
    * @param {EventListenerOrEventListenerObject} listener
    * @param {boolean | AddEventListenerOptions | undefined} options
    */
-  public addEventListener(
+  public addListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions | undefined
@@ -96,8 +94,6 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
     }
 
     this._element.addEventListener(type, listener, options);
-
-    this._listeners.push({ type, listener });
 
     if (!this._listenerTypesMap.has(type)) {
       this._listenerTypesMap.set(type, []);
@@ -146,15 +142,17 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
       throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
     }
 
-    while (this._listeners.length) {
-      const item = this._listeners.shift();
+    this._listenerTypesMap.forEach((listeners: EventListenerOrEventListenerObject[], key: string) => {
+      while (listeners.length) {
+        const listener = listeners.shift();
 
-      if (!item) {
-        continue;
+        if (!(listener && this._element)) {
+          continue;
+        }
+
+        this._element.removeEventListener(key, listener);
       }
-
-      this._element.removeEventListener(item.type, item.listener);
-    }
+    })
 
     // clear map
     this._listenerTypesMap.clear();
@@ -174,7 +172,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
     }
 
     if (options.clearClasses) {
-      // this._element.classList.remove(...this._element.classList);
+      removeDomClasses(this._element);
     }
 
     if (options.clearInlineStyles) {

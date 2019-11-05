@@ -1,5 +1,4 @@
 import ElementRef from "./ElementRef";
-import IEventListenerPair from "./interfaces/IEventListenerPair";
 
 /**
  * For test
@@ -38,8 +37,8 @@ class ElementRefTest<E extends keyof HTMLElementTagNameMap> extends ElementRef<
     return this._listenerTypesMap;
   }
 
-  public get listeners(): IEventListenerPair[] {
-    return this._listeners;
+  public constructor(type: E) {
+    super(type);
   }
 
   public createNativeElement(): void {
@@ -74,7 +73,6 @@ const disposeElements = <T extends keyof HTMLElementTagNameMap>(
 };
 
 describe("ElementRef new", () => {
-
   it("the instanse of ElementRef<div> should be defined", () => {
     const elRef = ElementRefTest.new("div");
 
@@ -95,7 +93,6 @@ describe("ElementRef new", () => {
 });
 
 describe("ElementRef __toPool", () => {
-
   it('The length of the "div" pool must be 0', () => {
     const element = ElementRefTest.new("div");
     ElementRefTest.toPool("div", element);
@@ -108,9 +105,7 @@ describe("ElementRef __toPool", () => {
   });
 });
 
-
 describe("ElementRef instances dispose", () => {
-
   it('The length of the "div" pool must be 3', () => {
     const divElements = createElements(10, "div");
     disposeElements(divElements, 1);
@@ -132,6 +127,103 @@ describe("ElementRef instances dispose", () => {
     expect(aPpool ? aPpool.length : -1).toEqual(5);
 
     disposeElements(aElements);
+    ElementRefTest.pool.clear();
+  });
+});
+
+describe("ElementRef addListener", () => {
+  it("the length of listeners must equal 3", () => {
+    const elRef = new ElementRefTest("div");
+
+    // tslint:disable-next-line: no-empty
+    const testHandler = (): void => {};
+
+    for (let i = 0, l = 3; i < l; i++) {
+      elRef.addListener("click", testHandler);
+    }
+
+    const listeners = elRef.listenerTypesMap.get("click");
+
+    expect(listeners ? listeners.length : -1).toEqual(1);
+
+    elRef.dispose();
+
+    ElementRefTest.pool.clear();
+  });
+
+  it("reactions of listeners must equal 1", () => {
+    const elRef = new ElementRefTest("div");
+
+    let reactions = 0;
+
+    const testHandler = (): void => {
+      reactions++;
+    };
+
+    for (let i = 0, l = 5; i < l; i++) {
+      elRef.addListener("click", testHandler);
+    }
+
+    // dispatch click event
+    if (elRef.element) {
+      elRef.element.click();
+    }
+
+    expect(reactions).toEqual(1);
+
+    elRef.dispose();
+
+    ElementRefTest.pool.clear();
+  });
+});
+
+describe("ElementRef removeListener", () => {
+  it("the length of listeners must equal 0", () => {
+    const elRef = new ElementRefTest("div");
+
+    // tslint:disable-next-line: no-empty
+    const testHandler = (): void => {};
+
+    elRef.addListener("click", testHandler);
+    elRef.removeListener("click", testHandler);
+
+    const listeners = elRef.listenerTypesMap.get("click");
+
+    expect(listeners ? listeners.length : -1).toEqual(0);
+
+    elRef.dispose();
+
+    ElementRefTest.pool.clear();
+  });
+});
+
+describe("ElementRef removeAllListeners", () => {
+  it("the length of listeners must equal 0", () => {
+    const elRef = new ElementRefTest("div");
+
+    // tslint:disable-next-line: no-empty
+    const testHandler = (): void => {};
+
+    for (let i = 0, l = 20; i < l; i++) {
+      elRef.addListener(
+        String(i),
+        testHandler
+      );
+    }
+
+    elRef.removeAllListeners();
+
+    let count = 0;
+    elRef.listenerTypesMap.forEach(
+      (listeners: EventListenerOrEventListenerObject[]) => {
+        count += listeners.length;
+      }
+    );
+
+    expect(count).toEqual(0);
+
+    elRef.dispose();
+
     ElementRefTest.pool.clear();
   });
 });

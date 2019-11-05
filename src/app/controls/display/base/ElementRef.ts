@@ -22,7 +22,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
     return new ElementRef(type);
   }
 
-  private static __pool = new Map<
+  protected static __pool = new Map<
     keyof HTMLElementTagNameMap,
     Array<ElementRef<keyof HTMLElementTagNameMap>>
   >();
@@ -32,7 +32,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
    * @param {E} type
    * @param {ElementRef<E>} elementRef
    */
-  private static __fromPool<E extends keyof HTMLElementTagNameMap>(
+  protected static __fromPool<E extends keyof HTMLElementTagNameMap>(
     type: E
   ): ElementRef<E> | undefined {
     const pool = this.__pool.get(type);
@@ -51,7 +51,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
    * @param {E} type
    * @param {ElementRef<E>} elementRef
    */
-  private static __toPool<E extends keyof HTMLElementTagNameMap>(
+  protected static __toPool<E extends keyof HTMLElementTagNameMap>(
     type: E,
     elementRef: ElementRef<E>
   ): void {
@@ -66,17 +66,17 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
   protected _element: HTMLElementTagNameMap[E] | undefined;
   public get element(): HTMLElementTagNameMap[E] | undefined { return this._element; }
 
-  private _listenerTypesMap = new Map<
+  protected _listenerTypesMap = new Map<
     string,
     EventListenerOrEventListenerObject[]
   >();
 
-  private _listeners = new Array<IEventListenerPair>();
+  protected _listeners = new Array<IEventListenerPair>();
 
   /**
    * @param {E} type
    */
-  private constructor(public readonly type: E) {
+  protected constructor(public readonly type: E) {
     this._createNativeElement();
   }
 
@@ -182,7 +182,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
     }
   }
 
-  private _createNativeElement(): void {
+  protected _createNativeElement(): void {
     this._element = document.createElement<E>(this.type);
   }
 }

@@ -1,5 +1,5 @@
 import App from "./app/App";
-import { mount } from "./app/controls/utils/dom";
+import { mount } from "./app/cyclone/utils/dom";
 import "./style.scss";
 
 export const createApp = (): void => {

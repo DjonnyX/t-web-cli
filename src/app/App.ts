@@ -1,4 +1,4 @@
-import CApp from "./controls/core/CApp";
+import CApp from "./cyclone/core/CApp";
 
 export default class App extends CApp {
   constructor() {

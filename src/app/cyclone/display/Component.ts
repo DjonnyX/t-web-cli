@@ -2,7 +2,6 @@ import ElementRef from "./base/ElementRef";
 import { IComponentOptions } from "./interfaces";
 import CSerializer from "../core/serializer/CSerializer";
 import { IModule } from "../module";
-import { RuntimeErrors } from "../runtime";
 
 /**
  * Component

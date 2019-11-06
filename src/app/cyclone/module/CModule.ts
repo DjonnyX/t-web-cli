@@ -3,7 +3,7 @@ import { Component } from "../display";
 
 class CModule implements IModule {
     public components!: {
-        [x: string]: new () => Component;
+        [x: string]: new () => Component<any>;
     };
 }
 export default CModule;

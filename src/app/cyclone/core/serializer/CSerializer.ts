@@ -8,7 +8,9 @@ import {
   ATTRS_REGEX,
   ATTR_VALUE_REGEX,
   ATTR_NAME_REGEX,
-  TAG_NAME
+  TAG_NAME,
+  TAG_REGEX,
+  SEGMENT_REGEX
 } from "./helpers/regex";
 
 class CSerializer<E extends keyof HTMLElementTagNameMap = any> {
@@ -25,34 +27,52 @@ class CSerializer<E extends keyof HTMLElementTagNameMap = any> {
       return;
     }
 
-    const mSegments = template.match(template);
+    const mSegments = template.match(SEGMENT_REGEX);
 
     if (!mSegments) {
-      throw new Error(RuntimeErrors.WRONG_TEMPLATE);
+      return;
     }
 
     let mounter: Component<any> = owner;
 
     for (let i = 0, l = mSegments.length; i < l; i++) {
-      const s = mSegments[i];
-      if (CLOSURE_TAG_REGEX.test(s)) {
+      const mSegment = mSegments[i];
+      const mSelectorBody = mSegment.match(TAG_REGEX);
+
+      if (!mSelectorBody) {
+        continue;
+      }
+
+      const selectorBody = mSelectorBody[0];
+      const selectorText = mSegment.replace(TAG_REGEX, '').replace(/^\s+/m, '');
+
+      if (CLOSURE_TAG_REGEX.test(selectorBody) && mounter.parent) {
         mounter = mounter.parent;
         continue;
       }
 
-      if (LEAD_TAG_REGEX.test(s)) {
+      if (LEAD_TAG_REGEX.test(selectorBody)) {
 
-        const mTagName = s.match(TAG_NAME);
+        const mTagName = selectorBody.match(TAG_NAME);
 
         if (!mTagName) {
           throw new Error(RuntimeErrors.WRONG_TEMPLATE);
         }
 
-        const CClass = getCClass(cModule, mTagName[0]) || Component;
-        const component = new CClass();
+        const tName = mTagName[0];
+        const CClass = getCClass(cModule, tName);
+        let component: Component<any>;
+        if (!CClass) {
+          component = new Component({
+            elementRefType: tName as any,
+            cModule // transmit to children
+          });
+        } else {
+          component = new CClass();
+        }
 
         // add attrs
-        const mAttributes = s.match(ATTRS_REGEX);
+        const mAttributes = selectorBody.match(ATTRS_REGEX);
         if (mAttributes) {
           for (let j = 0, l1 = mAttributes.length; j < l1; j++) {
             const mAttr = mAttributes[j];
@@ -73,12 +93,13 @@ class CSerializer<E extends keyof HTMLElementTagNameMap = any> {
           }
         }
 
+        if (selectorText) {
+          component.innerText = selectorText;
+        }
+
         mounter.addChild(component);
         mounter = component;
-        continue;
       }
-
-      mounter.innerText = s;
     }
   }
 }

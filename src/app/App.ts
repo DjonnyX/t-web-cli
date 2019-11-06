@@ -4,7 +4,15 @@ import { cModule } from "./cyclone/module";
 export default class App extends Component {
   constructor() {
     super({
-      template: `<a><a>test</a></a>`,
+      template: `<a>
+      <a class="ssd">
+        test
+      </a>
+      <a>
+        test
+      </a>
+        </a>
+      `,
       selectorName: "root",
       cModule: cModule
     });
@@ -12,5 +20,5 @@ export default class App extends Component {
 }
 
 cModule.components = {
-  "App": App
+  App: App
 };

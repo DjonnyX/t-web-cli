@@ -2,6 +2,7 @@ import ElementRef from "./base/ElementRef";
 import { IComponentOptions } from "./interfaces";
 import CSerializer from "../core/serializer/CSerializer";
 import { IModule } from "../module";
+import { mount } from "../utils/dom";
 
 /**
  * Component
@@ -40,8 +41,11 @@ export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
   public addChild<E extends keyof HTMLElementTagNameMap = "div">(
     child: Component<E>
   ): Component<E> {
+    this._children.push(child);
     child._parent = this;
-    // etc
+
+    mount(this.nativeElement.element, child.nativeElement.element);
+
     return child;
   }
 
@@ -62,7 +66,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
     this.nativeElement.element.innerText = value;
   }
 
-  protected injectChildrenFromTemplate(template: string, m: IModule): void {
-    new CSerializer(this, template, m);
+  protected injectChildrenFromTemplate(template: string, cModule: IModule): void {
+    new CSerializer(this, template, cModule);
   }
 }

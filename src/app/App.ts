@@ -4,7 +4,7 @@ import { cModule } from "./cyclone/module";
 export default class App extends Component {
   constructor() {
     super({
-      template: `<a>test</a>`,
+      template: `<a><a>test</a></a>`,
       selectorName: "root",
       cModule: cModule
     });

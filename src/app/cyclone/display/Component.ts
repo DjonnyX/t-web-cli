@@ -1,5 +1,6 @@
 import ElementRef from "./base/ElementRef";
 import { IComponentOptions } from "./interfaces";
+import CSerializer from "../core/serializer/CSerializer";
 
 /**
  * Component
@@ -16,6 +17,8 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
 
   public constructor(options?: IComponentOptions) {
     this.nativeElement = ElementRef.new(options);
+
+    this.injectChildrenFromTemplate(options ? options.template || "" : "");
   }
 
   public addChild<E extends keyof HTMLElementTagNameMap = any>(
@@ -37,5 +40,15 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     child: Component<E>
   ): boolean {
     return this._children.indexOf(child) > -1;
+  }
+
+  public set innerText(value: string) {
+    this.nativeElement.element.innerText = value;
+  }
+
+  protected injectChildrenFromTemplate(template: string): void {
+    new CSerializer(this, template, {
+      components: {}
+    });
   }
 }

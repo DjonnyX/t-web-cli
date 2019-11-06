@@ -10,6 +10,12 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "lib": ["dom", "es5", "es6"],
+    "@cyclone/*": [
+      "src/app/cyclone/*"
+    ],
+    "@app/*": [
+      "src/app/*"
+    ]
   },
   "include": [
     "./src/**/*"

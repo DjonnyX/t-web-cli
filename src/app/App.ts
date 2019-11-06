@@ -1,6 +1,6 @@
-import { Component } from "./controls";
+import CApp from "./controls/core/CApp";
 
-export default class App extends Component<"div"> {
+export default class App extends CApp {
   constructor() {
     super();
 

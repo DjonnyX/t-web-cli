@@ -1,5 +1,4 @@
 const getAttributeLength = (element: HTMLElement): number => {
-  const attrs = element.attributes;
-  return attrs.length;
+  return element.attributes.length;
 };
 export default getAttributeLength;

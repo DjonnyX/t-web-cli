@@ -1,4 +1,5 @@
 import ElementRef from "./ElementRef";
+import { IElementRefOptions } from "./interfaces";
 
 /**
  * For test
@@ -37,8 +38,8 @@ class ElementRefTest<E extends keyof HTMLElementTagNameMap> extends ElementRef<
     return this._listenerTypesMap;
   }
 
-  public constructor(type: E) {
-    super(type);
+  public constructor(options?: IElementRefOptions) {
+    super(options);
   }
 
   public createNativeElement(): void {
@@ -48,11 +49,11 @@ class ElementRefTest<E extends keyof HTMLElementTagNameMap> extends ElementRef<
 
 const createElements = <T extends keyof HTMLElementTagNameMap>(
   length: number,
-  type: T
+  elementRefType: T
 ): Array<ElementRef<T>> => {
   const elements: Array<ElementRef<T>> = [];
   for (let i = 0; i < length; i++) {
-    elements.push(ElementRefTest.new(type));
+    elements.push(ElementRefTest.new({ elementRefType }));
   }
   return elements;
 };
@@ -74,7 +75,7 @@ const disposeElements = <T extends keyof HTMLElementTagNameMap>(
 
 describe("ElementRef new", () => {
   it("the instanse of ElementRef<div> should be defined", () => {
-    const elRef = ElementRefTest.new("div");
+    const elRef = ElementRefTest.new();
 
     expect(elRef).toBeDefined();
 
@@ -82,10 +83,10 @@ describe("ElementRef new", () => {
     ElementRefTest.pool.clear();
   });
 
-  it("the instanse of ElementRef<a> should be defined", () => {
-    const elRef = ElementRefTest.new("a");
+  it('selector name must be "span"', () => {
+    const elRef = ElementRefTest.new({ elementRefType: "span" });
 
-    expect(elRef).toBeDefined();
+    expect(elRef.element.tagName).toEqual("SPAN");
 
     elRef.dispose();
     ElementRefTest.pool.clear();
@@ -93,8 +94,8 @@ describe("ElementRef new", () => {
 });
 
 describe("ElementRef __toPool", () => {
-  it('The length of the "div" pool must be 0', () => {
-    const element = ElementRefTest.new("div");
+  it('length of the "div" pool must be 0', () => {
+    const element = ElementRefTest.new();
     ElementRefTest.toPool("div", element);
     const divPool = ElementRefTest.pool.get("div");
 
@@ -133,7 +134,7 @@ describe("ElementRef instances dispose", () => {
 
 describe("ElementRef addListener", () => {
   it("the length of listeners must equal 3", () => {
-    const elRef = new ElementRefTest("div");
+    const elRef = new ElementRefTest();
 
     // tslint:disable-next-line: no-empty
     const testHandler = (): void => {};
@@ -152,7 +153,7 @@ describe("ElementRef addListener", () => {
   });
 
   it("reactions of listeners must equal 1", () => {
-    const elRef = new ElementRefTest("div");
+    const elRef = new ElementRefTest();
 
     let reactions = 0;
 
@@ -179,7 +180,7 @@ describe("ElementRef addListener", () => {
 
 describe("ElementRef removeListener", () => {
   it("the length of listeners must equal 0", () => {
-    const elRef = new ElementRefTest("div");
+    const elRef = new ElementRefTest();
 
     // tslint:disable-next-line: no-empty
     const testHandler = (): void => {};
@@ -199,16 +200,13 @@ describe("ElementRef removeListener", () => {
 
 describe("ElementRef removeAllListeners", () => {
   it("the length of listeners must equal 0", () => {
-    const elRef = new ElementRefTest("div");
+    const elRef = new ElementRefTest();
 
     // tslint:disable-next-line: no-empty
     const testHandler = (): void => {};
 
     for (let i = 0, l = 20; i < l; i++) {
-      elRef.addListener(
-        String(i),
-        testHandler
-      );
+      elRef.addListener(String(i), testHandler);
     }
 
     elRef.removeAllListeners();

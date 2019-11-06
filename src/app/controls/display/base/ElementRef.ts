@@ -1,10 +1,13 @@
-import { Errors } from "../../runtime";
+import { RuntimeErrors } from "../../runtime";
 import {
   removeAttributes,
   removeChildren,
   removeDomClasses
 } from "../../utils/dom";
 import IElementRefDisposeOptions from "./interfaces/IElementRefDisposeOptions";
+import { IElementRefOptions } from "./interfaces";
+
+const DEFAULT_NATIVE_ELEMENT_TYPE = "div";
 
 /**
  * ElementRef
@@ -16,14 +19,15 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
    * @param {E} type
    */
   public static new<E extends keyof HTMLElementTagNameMap>(
-    type: E
+    options?: IElementRefOptions
   ): ElementRef<E> {
+    const type = options && options.elementRefType !== undefined ? options.elementRefType : DEFAULT_NATIVE_ELEMENT_TYPE as any;
     const elementRef = this.__fromPool(type);
     if (elementRef) {
       return elementRef;
     }
 
-    return new ElementRef(type);
+    return new ElementRef(options);
   }
 
   protected static __pool = new Map<
@@ -36,7 +40,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
    * @param {E} type
    * @param {ElementRef<E>} elementRef
    */
-  protected static __fromPool<E extends keyof HTMLElementTagNameMap>(
+  protected static __fromPool<E extends keyof HTMLElementTagNameMap = any>(
     type: E
   ): ElementRef<E> | undefined {
     const pool = this.__pool.get(type);
@@ -67,6 +71,9 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
     }
   }
 
+  public readonly type: E;
+  public readonly selectorName!: string;
+
   protected _element!: HTMLElementTagNameMap[E];
   public get element(): HTMLElementTagNameMap[E] {
     return this._element;
@@ -80,7 +87,11 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
   /**
    * @param {E} type
    */
-  protected constructor(public readonly type: E) {
+  protected constructor(options?: IElementRefOptions) {
+
+    this.type = options && options.elementRefType !== undefined ? options.elementRefType : DEFAULT_NATIVE_ELEMENT_TYPE as any;
+    this.selectorName = options && options.selectorName !== undefined ? options.selectorName : this.type;
+
     this._createNativeElement();
   }
 
@@ -96,7 +107,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
     options?: boolean | AddEventListenerOptions | undefined
   ): void {
     if (!this._element) {
-      throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
+      throw new Error(RuntimeErrors.NATIVE_ELEMENT_IS_NOT_DEFINED);
     }
 
     this._element.addEventListener(type, listener, options);
@@ -122,7 +133,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
     listener: EventListenerOrEventListenerObject
   ): void {
     if (!this._element) {
-      throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
+      throw new Error(RuntimeErrors.NATIVE_ELEMENT_IS_NOT_DEFINED);
     }
 
     this._element.removeEventListener(type, listener);
@@ -145,7 +156,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
    */
   public removeAllListeners(): void {
     if (!this._element) {
-      throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
+      throw new Error(RuntimeErrors.NATIVE_ELEMENT_IS_NOT_DEFINED);
     }
 
     this._listenerTypesMap.forEach(
@@ -168,7 +179,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
 
   public dispose(options?: IElementRefDisposeOptions): void {
     if (!this._element) {
-      throw new Error(Errors.NATIVE_ELEMENT_IS_NOT_DEFINED);
+      throw new Error(RuntimeErrors.NATIVE_ELEMENT_IS_NOT_DEFINED);
     }
 
     ElementRef.__toPool(this.type, this);
@@ -197,6 +208,6 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
   }
 
   protected _createNativeElement(): void {
-    this._element = document.createElement<E>(this.type);
+    this._element = document.createElement<E>(this.selectorName as any, {is: this.type});
   }
 }

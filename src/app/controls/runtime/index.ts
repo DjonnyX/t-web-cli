@@ -1,3 +1,3 @@
-import Errors from "./errors";
+import RuntimeErrors from "./RuntimeErrors";
 
-export { Errors };
+export { RuntimeErrors };

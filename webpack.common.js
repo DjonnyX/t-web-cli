@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require("path");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -33,12 +35,7 @@ module.exports = env => {
         {
           test: /.(ts)$/,
           exclude: /node_modules/,
-          loaders: ["ts-loader"]
-        },
-        {
-          test: /.(js)$/,
-          exclude: /node_modules/,
-          loaders: ["babel-loader"]
+          loaders: ["babel-loader", "ts-loader"]
         },
         {
           test: /\.html$/,

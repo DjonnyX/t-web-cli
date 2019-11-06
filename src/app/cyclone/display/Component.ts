@@ -1,11 +1,20 @@
 import ElementRef from "./base/ElementRef";
 import { IComponentOptions } from "./interfaces";
 import CSerializer from "../core/serializer/CSerializer";
+import { IModule } from "../module";
+import { RuntimeErrors } from "../runtime";
 
 /**
  * Component
  */
-export default class Component<E extends keyof HTMLElementTagNameMap = any> {
+export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
+  public static meta: {
+    template?: string;
+    elementRefType?: keyof HTMLElementTagNameMap;
+    selectorName?: string;
+    module?: IModule;
+  } = {};
+
   public readonly nativeElement: ElementRef<E>;
 
   protected _children = new Array<Component<any>>();
@@ -15,13 +24,21 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     return this._parent;
   }
 
-  public constructor(options?: IComponentOptions) {
-    this.nativeElement = ElementRef.new(options);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public constructor(options: IComponentOptions = {}) {
+    const { selectorName, elementRefType, template } = options;
 
-    this.injectChildrenFromTemplate(options ? options.template || "" : "");
+    this.nativeElement = ElementRef.new({
+      elementRefType,
+      selectorName
+    });
+
+    if (template && options.cModule) {
+      this.injectChildrenFromTemplate(template, options.cModule);
+    }
   }
 
-  public addChild<E extends keyof HTMLElementTagNameMap = any>(
+  public addChild<E extends keyof HTMLElementTagNameMap = "div">(
     child: Component<E>
   ): Component<E> {
     child._parent = this;
@@ -46,9 +63,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     this.nativeElement.element.innerText = value;
   }
 
-  protected injectChildrenFromTemplate(template: string): void {
-    new CSerializer(this, template, {
-      components: {}
-    });
+  protected injectChildrenFromTemplate(template: string, m: IModule): void {
+    new CSerializer(this, template, m);
   }
 }

@@ -1,9 +1,16 @@
-import CApp from "./cyclone/core/CApp";
+import { Component } from "./cyclone/display";
+import { cModule } from "./cyclone/module";
 
-export default class App extends CApp {
+export default class App extends Component {
   constructor() {
-    super();
-
-    this.nativeElement.element.innerHTML = "Work"
+    super({
+      template: `<a>test</a>`,
+      selectorName: "root",
+      cModule: cModule
+    });
   }
 }
+
+cModule.components = {
+  "App": App
+};

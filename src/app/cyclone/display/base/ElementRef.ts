@@ -13,12 +13,12 @@ const DEFAULT_NATIVE_ELEMENT_TYPE = "div";
  * ElementRef
  * Elements are reused.
  */
-export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
+export default class ElementRef<E extends keyof HTMLElementTagNameMap = "div"> {
   /**
    * Creating a new native element from pool or direct creation
    * @param {E} type
    */
-  public static new<E extends keyof HTMLElementTagNameMap>(
+  public static new<E extends keyof HTMLElementTagNameMap = "div">(
     options?: IElementRefOptions
   ): ElementRef<E> {
     const type = options && options.elementRefType !== undefined ? options.elementRefType : DEFAULT_NATIVE_ELEMENT_TYPE as any;
@@ -40,7 +40,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
    * @param {E} type
    * @param {ElementRef<E>} elementRef
    */
-  protected static __fromPool<E extends keyof HTMLElementTagNameMap = any>(
+  protected static __fromPool<E extends keyof HTMLElementTagNameMap = "div">(
     type: E
   ): ElementRef<E> | undefined {
     const pool = this.__pool.get(type);
@@ -59,7 +59,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap> {
    * @param {E} type
    * @param {ElementRef<E>} elementRef
    */
-  protected static __toPool<E extends keyof HTMLElementTagNameMap>(
+  protected static __toPool<E extends keyof HTMLElementTagNameMap = "div">(
     type: E,
     elementRef: ElementRef<E>
   ): void {

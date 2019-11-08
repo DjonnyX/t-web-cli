@@ -1,8 +1,12 @@
-export const TAG_REGEX = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g;
-export const TAG_NAME = /[\w.]+/;
+export const SEGMENT_REGEX = /<.([^<]+)/migs
+export const TAG_REGEX = /(?=<).([^>]+>|\/>)/migs;
+export const TAG_NAME = /[\w.\-\_]+/;
 export const REPL_REGEX = /{{.([^r}}][^}}])?}}/;
-export const LEAD_TAG_REGEX = /<.([^r>][^>]*)?>/;
-export const CLOSURE_TAG_REGEX = /<.([^r\/>][^\/>]*)?\/>/;
-export const ATTRS_REGEX = /\w+\s*=\s*".*?"/g;
+export const LEAD_TAG_REGEX = /<([^\/]).?([^r>][^>]*)?>/;
+export const CLOSURE_TAG_REGEX = /(<\/.([^r\/>][^\/>]*)?>)/;
+export const ATTRS_REGEX = /(\(.*?\)=?\s?\{.*?\})|(\w+\s*=\{.*?\})|(\w+\s*=\s*".*?")+/g;
 export const ATTR_VALUE_REGEX = /\"([^']*?)\"/;
 export const ATTR_NAME_REGEX = /[\w-]+(?=[^\"]*\")/;
+export const ATTR_NAME_EVENT_REGEXP = /(\(.*?\))/;
+export const PROCEDURE_ATTR_REGEX = /({+.*?}+)/gm;
+export const PROCEDURE_TEXT_REGEX = /([^{]+)|({+.*?}+)/gm;

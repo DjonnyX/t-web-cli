@@ -5,8 +5,8 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "noImplicitAny": true,
-    "outDir": "dist",
-    "baseUrl": "./",
+    "outDir": "output",
+    "baseUrl": ".",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "lib": [
@@ -21,5 +21,5 @@
   "exclude": [
     "./src/**/*.spec.ts"
   ],
-  "compileOnSave": false
+  "compileOnSave": true
 }

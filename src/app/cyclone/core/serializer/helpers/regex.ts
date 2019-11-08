@@ -9,3 +9,4 @@ export const ATTR_VALUE_REGEX = /\"([^']*?)\"/;
 export const ATTR_NAME_REGEX = /[\w-]+(?=[^\"]*\")/;
 export const ATTR_NAME_EVENT_REGEXP = /(\(.*?\))/;
 export const PROCEDURE_ATTR_REGEX = /({+.*?}+)/gm;
+export const PROCEDURE_TEXT_REGEX = /([^{]+)|({+.*?}+)/gm;

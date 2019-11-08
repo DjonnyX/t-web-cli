@@ -12,17 +12,17 @@ import {
   TAG_REGEX,
   SEGMENT_REGEX,
   PROCEDURE_ATTR_REGEX,
-  ATTR_NAME_EVENT_REGEXP
+  ATTR_NAME_EVENT_REGEXP,
+  PROCEDURE_TEXT_REGEX
 } from "./helpers/regex";
 import { cyclone } from "..";
 
-class CSerializer<E extends keyof HTMLElementTagNameMap = any> {
-  constructor(owner: Component<E>, template: string, cModule: IModule) {
-    this.parse(owner, template, cModule);
-  }
-
-  protected parse(
-    owner: Component<E>,
+/**
+ * Serializing simple template with events, binding methods
+ */
+class CSerializer {
+  public static parse(
+    owner: Component<any>,
     template: string,
     cModule: IModule
   ): void {
@@ -48,6 +48,11 @@ class CSerializer<E extends keyof HTMLElementTagNameMap = any> {
 
       const selectorBody = mSelectorBody[0];
       const selectorText = mSegment.replace(TAG_REGEX, "").replace(/^\s+/m, "");
+
+      const mSelectorText = selectorText.match(PROCEDURE_TEXT_REGEX);
+      if (mSelectorText && mSelectorText.length) {
+        // inner handler
+      }
 
       if (CLOSURE_TAG_REGEX.test(selectorBody) && mounter.parent) {
         mounter = mounter.parent;

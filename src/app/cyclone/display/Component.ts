@@ -1,5 +1,4 @@
 import { Subject, Observable, Subscription } from "rxjs";
-import { map } from "rxjs/operators";
 import ElementRef from "./base/ElementRef";
 import {
   IComponentOptions,
@@ -14,7 +13,7 @@ import { RuntimeErrors } from "../runtime";
 /**
  * Basic component
  */
-export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
+export default class Component<E extends keyof HTMLElementTagNameMap = any> {
   public static meta: {
     template?: string;
     elementRefType?: keyof HTMLElementTagNameMap;
@@ -51,9 +50,11 @@ export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
     if (template && options.cModule) {
       this.injectChildrenFromTemplate(template, options.cModule);
     }
+
+    this.nativeElement.addListener('click', (e) => {this.click(e)});
   }
 
-  public addInteractionEvent<T = any>(eventName: string): Observable<T> {
+  public readonly addInteractionEvent = <T = any>(eventName: string): Observable<T> => {
     if (!eventName) {
       throw new Error(RuntimeErrors.EVENT_TYPE_MUST_BE_DEFINED);
     }
@@ -83,6 +84,9 @@ export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
     return this._events[eventName].emitter;
   }
 
+  /**
+   * Emit event to owner
+   */
   protected emitEvent<V = any>(eventName: string, value: V): void {
     const emitter = this._extractEmitter(eventName);
     if (!emitter) {
@@ -170,26 +174,29 @@ export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
     template: string,
     cModule: IModule
   ): void {
-    new CSerializer(this, template, cModule);
+    CSerializer.parse(this, template, cModule);
   }
 
-  public bindInteractionHandler(
+  public readonly bindInteractionHandler = (
     handler: Observable<any>,
     handlerName: string
-  ): void {
-    if (!(this as Record<string, any>).hasOwnProperty(handlerName)) {
+  ): void => {
+
+    const a = Object.getPrototypeOf(this);
+    if (!a.hasOwnProperty(handlerName)) {
       throw new Error(RuntimeErrors.EVENT_HANDLER__E__IS_NOT_EXISTS.replace(/\$h/, handlerName));
     }
 
-    const method = (this as Record<string, any>)[handlerName];
-
     this._interactionSubscriptions.push(handler.subscribe((value: any) => {
-      method(value);
+      (this as Record<string, any>)[handlerName].apply(this, value);
     }));
   }
 
+  /**
+   * Removing all interactive eventEmitter's
+   */
   protected removeInteractionEvents(): void {
-    const eventTypes = (this._events as Record<string, any>).keys();
+    const eventTypes = Object.keys(this._events);
 
     for (const eventType in eventTypes) {
       const emitter = this._extractEmitter(eventType);
@@ -216,8 +223,8 @@ export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
   public dispose(
     options: IComponentDisposeOptions = { disposeChildren: false }
   ): void {
+    this.removeChildren({ dispose: options.disposeChildren });
     this.removeInteractionHandlers();
     this.removeInteractionEvents();
-    this.removeChildren({ dispose: options.disposeChildren });
   }
 }

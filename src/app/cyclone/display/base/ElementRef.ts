@@ -87,7 +87,7 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap = "div"> {
   /**
    * @param {E} type
    */
-  protected constructor(options?: IElementRefOptions) {
+  constructor(options?: IElementRefOptions) {
 
     this.type = options && options.elementRefType !== undefined ? options.elementRefType : DEFAULT_NATIVE_ELEMENT_TYPE as any;
     this.selectorName = options && options.selectorName !== undefined ? options.selectorName : this.type;
@@ -177,7 +177,11 @@ export default class ElementRef<E extends keyof HTMLElementTagNameMap = "div"> {
     this._listenerTypesMap.clear();
   }
 
-  public dispose(options?: IElementRefDisposeOptions): void {
+  public dispose(options: IElementRefDisposeOptions = {
+    clearClasses: true,
+    clearAttribute: true,
+    clearInnerHtml: true
+  }): void {
     if (!this._element) {
       throw new Error(RuntimeErrors.NATIVE_ELEMENT_IS_NOT_DEFINED);
     }

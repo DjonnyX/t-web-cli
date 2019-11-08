@@ -7,7 +7,7 @@ const testModule = new CModule();
 
 class TestComponent extends Component {
   public static readonly meta = {
-    template: `<div click={clickHandler}>
+    template: `<div (click)={clickHandler}>
           <sub-component></sub-component>
         </div>`,
     selectorName: "test-component",
@@ -27,7 +27,7 @@ class TestComponent extends Component {
     TestComponent.instance = this;
   }
 
-  clickHandler = (): void => {
+  public readonly clickHandler = (): void => {
     this._reaction = 0;
   };
 }

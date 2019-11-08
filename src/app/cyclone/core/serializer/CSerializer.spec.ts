@@ -5,27 +5,31 @@ import { mount } from "../../utils/dom";
 const testModule = new CModule();
 
 class TestLiComponent extends Component<"ul"> {
+  public static meta = {
+    template: `<div>test component</div>`,
+    selectorName: "test-list-component",
+    cModule: testModule
+  };
+
   constructor() {
-    super({
-      template: `<div>test component</div>`,
-      selectorName: "test-list-component",
-      cModule: testModule
-    });
+    super(TestLiComponent.meta);
   }
 }
 
 class TestApp extends Component {
+  public static meta = {
+    template: `<segment>
+      <span class="test-class">
+          test text
+      </span>
+      <test-list-component></test-list-component>
+    </segment>`,
+    selectorName: "root",
+    cModule: testModule
+  };
+
   constructor() {
-    super({
-      template: `<segment>
-        <span class="test-class">
-            test text
-        </span>
-        <TestLiComponent/>
-      </segment>`,
-      selectorName: "root",
-      cModule: testModule
-    });
+    super(TestApp.meta);
   }
 }
 
@@ -33,16 +37,16 @@ testModule.components = {
   TestApp,
   TestLiComponent
 };
-const testApp = new TestApp();
-mount(window.document.body, testApp.nativeElement.element);
 
 describe("serializer.CSerializer:parse", () => {
+  const testApp = new TestApp();
+  mount(window.document.body, testApp.nativeElement.element);
+
   const testedDom = testApp.nativeElement.element;
 
   it('must be contains "<test-list-component>"', () => {
-    expect(testedDom.getElementsByTagName("test-list-component").length > 0)
-      .toBeTruthy;
+    expect(
+      testedDom.getElementsByTagName("test-list-component").length > 0
+    ).toBeTruthy();
   });
-
-  // etc ..
 });

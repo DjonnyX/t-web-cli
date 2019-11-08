@@ -4,7 +4,16 @@ import getCClass from "./getCClass";
 
 const testModule = new CModule();
 
-class TestComponent extends Component {}
+class TestComponent extends Component {
+  public static readonly meta = {
+    selectorName: "test-component",
+    cModule: testModule
+  };
+
+  constructor() {
+    super(TestComponent.meta);
+  }
+}
 
 testModule.components = {
   TestComponent
@@ -12,6 +21,6 @@ testModule.components = {
 
 describe("serializer.helper.getCClass", () => {
   it("must be return TestComponent", () => {
-    expect(getCClass(testModule, "TestComponent")).toBeTruthy;
+    expect(getCClass(testModule, "test-component")).toEqual(TestComponent);
   });
 });

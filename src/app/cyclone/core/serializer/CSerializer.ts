@@ -10,8 +10,10 @@ import {
   ATTR_NAME_REGEX,
   TAG_NAME,
   TAG_REGEX,
-  SEGMENT_REGEX
+  SEGMENT_REGEX,
+  PROCEDURE_ATTR_REGEX
 } from "./helpers/regex";
+import { cyclone } from "..";
 
 class CSerializer<E extends keyof HTMLElementTagNameMap = any> {
   constructor(owner: Component<E>, template: string, cModule: IModule) {
@@ -44,7 +46,7 @@ class CSerializer<E extends keyof HTMLElementTagNameMap = any> {
       }
 
       const selectorBody = mSelectorBody[0];
-      const selectorText = mSegment.replace(TAG_REGEX, '').replace(/^\s+/m, '');
+      const selectorText = mSegment.replace(TAG_REGEX, "").replace(/^\s+/m, "");
 
       if (CLOSURE_TAG_REGEX.test(selectorBody) && mounter.parent) {
         mounter = mounter.parent;
@@ -52,7 +54,6 @@ class CSerializer<E extends keyof HTMLElementTagNameMap = any> {
       }
 
       if (LEAD_TAG_REGEX.test(selectorBody)) {
-
         const mTagName = selectorBody.match(TAG_NAME);
 
         if (!mTagName) {
@@ -83,13 +84,41 @@ class CSerializer<E extends keyof HTMLElementTagNameMap = any> {
             }
 
             const mAttrValue = mAttr.match(ATTR_VALUE_REGEX);
-            if (!mAttrValue) {
-              throw new Error(RuntimeErrors.WRONG_TEMPLATE);
+
+            if (!(mAttrValue && mAttrValue.length)) {
+              continue;
             }
 
             const attrName = mAttrName[0];
-            const attrVal = mAttrValue[0];
-            component.nativeElement.element.setAttribute(attrName, attrVal);
+            let attrValue = undefined;
+            if (PROCEDURE_ATTR_REGEX.test(mAttrValue[0])) {
+              const mAttrProcedureValue = mAttr.match(PROCEDURE_ATTR_REGEX);
+              if (mAttrProcedureValue && mAttrProcedureValue.length > 0) {
+                // procedure | prop
+                attrValue = mAttrProcedureValue[0].replace(/{|}/gm, "");
+
+                if (
+                  !(component as Record<string, any>).hasOwnProperty(attrName)
+                ) {
+                  // property not found
+                  throw new Error(
+                    RuntimeErrors.PROPERTY__S__IS_NOT_DEFINED_OF__O_.replace(
+                      /\$s/,
+                      attrName
+                    ).replace(/\$o/, tName)
+                  );
+                }
+
+                (component as any)[attrName] = (owner as any)[attrValue];
+                continue;
+              }
+            }
+
+            // text
+            if (!attrValue) {
+              attrValue = mAttrValue[0].replace(/'|"/gm, "");
+              component.nativeElement.element.setAttribute(attrName, attrValue);
+            }
           }
         }
 
@@ -97,7 +126,13 @@ class CSerializer<E extends keyof HTMLElementTagNameMap = any> {
           component.innerText = selectorText;
         }
 
+        // before attach
+        component.beforeAttach();
+
         mounter.addChild(component);
+
+        cyclone.addDeferCall(component.afterAttach);
+
         mounter = component;
       }
     }

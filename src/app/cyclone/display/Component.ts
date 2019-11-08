@@ -5,7 +5,7 @@ import { IModule } from "../module";
 import { mount } from "../utils/dom";
 
 /**
- * Component
+ * Basic component
  */
 export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
   public static meta: {
@@ -13,7 +13,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
     elementRefType?: keyof HTMLElementTagNameMap;
     selectorName?: string;
     module?: IModule;
-  } = {};
+  };
 
   public readonly nativeElement: ElementRef<E>;
 
@@ -24,8 +24,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
     return this._parent;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public constructor(options: IComponentOptions = {}) {
+  constructor(options: IComponentOptions = Component.meta) {
     const { selectorName, elementRefType, template } = options;
 
     this.nativeElement = ElementRef.new({
@@ -36,6 +35,20 @@ export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
     if (template && options.cModule) {
       this.injectChildrenFromTemplate(template, options.cModule);
     }
+  }
+
+  /**
+   * called before attaching to the owner
+   */
+  public beforeAttach(): void {
+    // etс
+  }
+
+  /**
+   * called after attaching to the owner
+   */
+  public afterAttach(): void {
+    // etс
   }
 
   public addChild<E extends keyof HTMLElementTagNameMap = "div">(
@@ -66,7 +79,14 @@ export default class Component<E extends keyof HTMLElementTagNameMap = "div"> {
     this.nativeElement.element.innerText = value;
   }
 
-  protected injectChildrenFromTemplate(template: string, cModule: IModule): void {
+  protected injectChildrenFromTemplate(
+    template: string,
+    cModule: IModule
+  ): void {
     new CSerializer(this, template, cModule);
+  }
+
+  public dispose(): void {
+    // etc
   }
 }

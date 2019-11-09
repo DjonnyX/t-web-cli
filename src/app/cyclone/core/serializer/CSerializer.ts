@@ -13,12 +13,22 @@ import {
   SEGMENT_REGEX,
   PROCEDURE_ATTR_REGEX,
   ATTR_NAME_EVENT_REGEXP,
-  PROCEDURE_TEXT_REGEX
+  PROCEDURE_TEXT_REGEX,
+  ATTR_NAME_COMP_REGEXP
 } from "./helpers/regex";
 import { cyclone } from "..";
 
 /**
  * Serializing simple template with events, binding methods
+ *
+ * Selector patterns:
+ * (event)={handler} - Event
+ * property={value} - set value to DOM property
+ * [property]={value} - set value to Component property
+ *
+ * Inner text patterns:
+ * some text - plain text
+ * some {textValue} for {ownerValue} - text with properties binding
  */
 class CSerializer {
   public static parse(
@@ -109,11 +119,48 @@ class CSerializer {
               }
             }
 
-            // props
+            // property binding
+            if (ATTR_NAME_COMP_REGEXP.test(mAttr)) {
+              const attrName = mAttr
+                .match(ATTR_NAME_COMP_REGEXP)[0]
+                .replace(/[\[|\]]/gm, "");
+              const mAttrValue = mAttr.match(PROCEDURE_ATTR_REGEX);
+
+              if (!(mAttrValue && mAttrValue.length)) {
+                continue;
+              }
+
+              if (PROCEDURE_ATTR_REGEX.test(mAttrValue[0])) {
+                const mAttrProcedureValue = mAttr.match(PROCEDURE_ATTR_REGEX);
+                if (mAttrProcedureValue && mAttrProcedureValue.length > 0) {
+                  // procedure | prop
+                  const attrValue = mAttrProcedureValue[0].replace(/{|}/gm, "");
+
+                  if (!(attrName in (component as Record<string, any>))) {
+                    // property not found
+                    throw new Error(
+                      RuntimeErrors.PROPERTY__S__IS_NOT_DEFINED_OF__O_.replace(
+                        /\$s/,
+                        attrName
+                      ).replace(/\$o/, tName)
+                    );
+                  }
+
+                  const prop = owner.makePropForBinding(attrValue);
+
+                  component.bindProperty(attrName, prop);
+                  continue;
+                }
+              }
+            }
+
+            // dom properties
             if (ATTR_NAME_REGEX.test(mAttr)) {
               const attrName = mAttr.match(ATTR_NAME_REGEX)[0];
 
-              const mAttrValue = mAttr.match(ATTR_VALUE_REGEX);
+              const mAttrValue =
+                mAttr.match(PROCEDURE_ATTR_REGEX) ||
+                mAttr.match(ATTR_VALUE_REGEX);
 
               if (!(mAttrValue && mAttrValue.length)) {
                 continue;
@@ -129,7 +176,10 @@ class CSerializer {
                   attrValue = mAttrProcedureValue[0].replace(/{|}/gm, "");
 
                   if (
-                    !(component as Record<string, any>).hasOwnProperty(attrName)
+                    !(
+                      attrName in
+                      (component.nativeElement.element as Record<string, any>)
+                    )
                   ) {
                     // property not found
                     throw new Error(
@@ -140,7 +190,9 @@ class CSerializer {
                     );
                   }
 
-                  (component as any)[attrName] = (owner as any)[attrValue];
+                  const prop = owner.makePropForBinding(attrValue);
+
+                  component.bindDomProperty(attrName, prop);
                   continue;
                 }
               }
@@ -148,6 +200,12 @@ class CSerializer {
               // text
               if (!attrValue) {
                 attrValue = mAttrValue[0].replace(/'|"/gm, "");
+
+                if (attrName in component.nativeElement.element) {
+                  component.nativeElement.element[attrName] = attrValue;
+                  continue;
+                }
+
                 component.nativeElement.element.setAttribute(
                   attrName,
                   attrValue

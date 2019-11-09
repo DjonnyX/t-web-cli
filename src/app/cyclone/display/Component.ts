@@ -9,6 +9,7 @@ import CSerializer from "../core/serializer/CSerializer";
 import { IModule } from "../module";
 import { mount } from "../utils/dom";
 import { RuntimeErrors } from "../runtime";
+import { cyclone } from "../core";
 
 /**
  * Basic component
@@ -32,6 +33,18 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     };
   } = {};
 
+  protected _propsForBinding: {
+    [propName: string]: () => any;
+  } = {};
+
+  protected _bindedProps: {
+    [propName: string]: () => any;
+  } = {};
+
+  protected _bindedDOMProps: {
+    [propName: string]: () => any;
+  } = {};
+
   protected _interactionSubscriptions = Array<Subscription>();
 
   constructor(options: IComponentOptions = Component.meta) {
@@ -47,6 +60,74 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     }
   }
 
+  public markForVerify(): void {
+    cyclone.addDeferCall(this._detectChanges);
+    for (const child of this._children) {
+      child.markForVerify();
+    }
+  }
+
+  protected _detectChanges = (): void => {
+    this.applyBindedProps();
+    this.applyDOMBindedProps();
+  }
+
+  protected applyBindedProps(): void {
+    const propNames = Object.keys(this._bindedProps);
+
+    for (const propName of propNames) {
+      const extProp = this._bindedProps[propName];
+      (this as Record<string, any>)[propName] = extProp();
+    }
+  }
+
+  protected applyDOMBindedProps(): void {
+    const propNames = Object.keys(this._bindedDOMProps);
+
+    for (const propName of propNames) {
+      const extProp = this._bindedDOMProps[propName];
+      (this.nativeElement.element as Record<string, any>)[propName] = extProp();
+    }
+  }
+
+  /**
+   * Prepares and returns a property for binding
+   */
+  public readonly makePropForBinding = <T = any>(
+    propName: string
+  ): (() => T) => {
+    if (
+      !(propName in (this._propsForBinding as Record<string, any>))
+    ) {
+      (this._propsForBinding as Record<string, any>)[propName] = (): T => {
+        return (this as Record<string, any>)[propName];
+      };
+    }
+    return (this._propsForBinding as Record<string, any>)[propName];
+  };
+
+  public readonly bindProperty = <T = any>(
+    propName: string,
+    externalProperty: () => T
+  ): void => {
+    if (propName in this._bindedProps) {
+      throw new Error(RuntimeErrors.PROPERTY__P__ALREADY_BINDED.replace(/\$p/, propName));
+    }
+
+    (this._bindedProps as Record<string, any>)[propName] = externalProperty;
+  };
+
+  public readonly bindDomProperty = <T = any>(
+    propName: string,
+    externalProperty: () => T
+  ): void => {
+    if (propName in this._bindedDOMProps) {
+      throw new Error(RuntimeErrors.PROPERTY__P__ALREADY_BINDED.replace(/\$p/, propName));
+    }
+
+    (this._bindedDOMProps as Record<string, any>)[propName] = externalProperty;
+  };
+
   public readonly addInteractionEvent = <T = any>(
     eventName: string
   ): Observable<T> => {
@@ -54,9 +135,9 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
       throw new Error(RuntimeErrors.EVENT_TYPE_MUST_BE_DEFINED);
     }
 
-    if (!(this._events as Record<string, any>).hasOwnProperty(eventName)) {
+    if (!(eventName in this._events)) {
       // dom events
-      if ((this as Record<string, any>).hasOwnProperty(eventName)) {
+      if (eventName in this) {
         const executor = (this as Record<string, any>)[eventName];
         this._events[eventName] = { emitter: new Subject<T>(), executor };
       }
@@ -64,8 +145,10 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
       else {
         const executor = (e: Event): void => {
           this.emitEvent(eventName, e);
-        }
-        this.nativeElement.addListener(eventName, e => {executor(e)});
+        };
+        this.nativeElement.addListener(eventName, e => {
+          executor(e);
+        });
         this._events[eventName] = {
           emitter: new Subject<T>(),
           executor
@@ -79,7 +162,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
   protected _extractEmitter<T = any>(
     eventName: string
   ): Subject<T> | undefined {
-    if (!(this._events as Record<string, any>).hasOwnProperty(eventName)) {
+    if (!(eventName in this._events)) {
       return undefined;
     }
     return this._events[eventName].emitter;
@@ -107,8 +190,8 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
   /**
    * called after attaching to the owner
    */
-  public afterAttach(): void {
-    // etс
+  public afterAttach = (): void => {
+    this.markForVerify();
   }
 
   public addChild<E extends keyof HTMLElementTagNameMap = any>(
@@ -128,7 +211,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
   ): Component<E> {
     const index = this._children.indexOf(child);
     if (index > -1) {
-      this._children.splice(index, 0);
+      this._children.splice(index, 1);
 
       if (this._parent) {
         this._parent.removeChild(this);
@@ -179,7 +262,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     handlerName: string
   ): void => {
     const a = Object.getPrototypeOf(this);
-    if (!a.hasOwnProperty(handlerName)) {
+    if (!(handlerName in a)) {
       throw new Error(
         RuntimeErrors.EVENT_HANDLER__E__IS_NOT_EXISTS.replace(
           /\$h/,
@@ -201,7 +284,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
   protected removeInteractionEvents(): void {
     const eventTypes = Object.keys(this._events);
 
-    for (const eventType in eventTypes) {
+    for (const eventType of eventTypes) {
       const emitter = this._extractEmitter(eventType);
 
       if (!emitter) {

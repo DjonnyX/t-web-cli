@@ -1,7 +1,7 @@
 import { Component } from ".";
 import CModule from "../module/CModule";
 import { mount } from "../utils/dom";
-import { Observable } from "rxjs";
+import { Observable, timer } from "rxjs";
 
 const testModule = new CModule();
 
@@ -10,8 +10,9 @@ const INNER_TEXT = "some text";
 class TestComponent extends Component {
   public static readonly meta = {
     template: `
-          <sub-component class="clicker" (click)={clickHandler}>
+          <sub-component className="clicker" (click)={clickHandler}>
             <div class="header">{title}</div>
+            <div className={customClassName}>
           </sub-component>
         `,
     selectorName: "test-component",
@@ -23,6 +24,12 @@ class TestComponent extends Component {
   protected _reaction = 0;
   public get reaction(): number {
     return this._reaction;
+  }
+
+  private _isTesting = false;
+
+  public get customClassName(): string {
+    return this._isTesting ? "tested-class" : "";
   }
 
   public get children(): Array<Component<any>> {
@@ -39,6 +46,11 @@ class TestComponent extends Component {
 
   public clickHandler(): void {
     this._reaction++;
+  }
+
+  public setTesting(): void {
+    this._isTesting = true;
+    this.markForVerify();
   }
 }
 
@@ -122,11 +134,22 @@ describe("Component injection", () => {
     clicker.click();
 
     expect(TestComponent.instance.reaction).toEqual(2);
-
-    TestApp.instance.dispose({ disposeChildren: true });
   });
 
-  it("After calling removeChild children length must be equal 0", () => {
+  it('className should be "tested-class"', () => {
+    TestComponent.instance.setTesting();
+
+    return timer(500)
+      .toPromise()
+      .then(() => {
+        const expectedEl = TestComponent.instance.nativeElement.element.getElementsByClassName(
+          "tested-class"
+        );
+        return expect(expectedEl.length).toBe(1);
+      });
+  });
+
+  it("After calling removeChild children length must be equal 1", () => {
     TestComponent.instance.removeChild(TestComponent.instance.children[0], {
       dispose: false
     });

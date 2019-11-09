@@ -1,13 +1,15 @@
-import { Component } from "./cyclone/display";
-import appModule from "./App.module";
+import { Component, IComponentOptions } from "./cyclone/display";
+import { tInputModule } from "./components";
+import rootModule from "./root-module";
 
 export default class App extends Component {
-  public static readonly meta = {
+  public static readonly meta: IComponentOptions = {
     template: `<div>
       Test app worked
+      <t-input></t-input>
     </div>`,
     selectorName: "root",
-    cModule: appModule
+    cModule: rootModule
   };
 
   constructor() {
@@ -16,6 +18,9 @@ export default class App extends Component {
 }
 
 // export the App class to the list of modules
-appModule.components = {
+rootModule.components = {
   App
 };
+rootModule.modules = {
+  tInputModule
+}

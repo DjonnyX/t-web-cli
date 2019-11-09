@@ -20,7 +20,7 @@ testModule.components = {
 
 describe("CModule", () => {
   it('must be returned TestComponent class by "test-component" selector', () => {
-    expect((testModule.components as any).hasOwnProperty("test-component"))
+    expect(("test-component" in testModule.components))
       .toBeTruthy();
   });
 });

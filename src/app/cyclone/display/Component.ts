@@ -14,12 +14,7 @@ import { RuntimeErrors } from "../runtime";
  * Basic component
  */
 export default class Component<E extends keyof HTMLElementTagNameMap = any> {
-  public static meta: {
-    template?: string;
-    elementRefType?: keyof HTMLElementTagNameMap;
-    selectorName?: string;
-    module?: IModule;
-  };
+  public static meta: IComponentOptions;
 
   public readonly nativeElement: ElementRef<E>;
 
@@ -33,7 +28,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
   protected _events: {
     [eventType: string]: {
       emitter: Subject<any> | undefined;
-      executor: () => void;
+      executor: (e: Event) => void;
     };
   } = {};
 
@@ -50,34 +45,40 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     if (template && options.cModule) {
       this.injectChildrenFromTemplate(template, options.cModule);
     }
-
-    this.nativeElement.addListener('click', (e) => {this.click(e)});
   }
 
-  public readonly addInteractionEvent = <T = any>(eventName: string): Observable<T> => {
+  public readonly addInteractionEvent = <T = any>(
+    eventName: string
+  ): Observable<T> => {
     if (!eventName) {
       throw new Error(RuntimeErrors.EVENT_TYPE_MUST_BE_DEFINED);
     }
 
     if (!(this._events as Record<string, any>).hasOwnProperty(eventName)) {
-      if (!(this as Record<string, any>).hasOwnProperty(eventName)) {
-        throw new Error(
-          RuntimeErrors.EXECUTOR_FOR_EVENTTYPE__T__IS_NOT_FOUND.replace(
-            /\$t/,
-            eventName
-          )
-        );
+      // dom events
+      if ((this as Record<string, any>).hasOwnProperty(eventName)) {
+        const executor = (this as Record<string, any>)[eventName];
+        this._events[eventName] = { emitter: new Subject<T>(), executor };
       }
-
-      const executor = (this as Record<string, any>)[eventName];
-
-      this._events[eventName] = { emitter: new Subject<T>(), executor };
+      // self events
+      else {
+        const executor = (e: Event): void => {
+          this.emitEvent(eventName, e);
+        }
+        this.nativeElement.addListener(eventName, e => {executor(e)});
+        this._events[eventName] = {
+          emitter: new Subject<T>(),
+          executor
+        };
+      }
     }
 
     return this._events[eventName].emitter.asObservable();
-  }
+  };
 
-  private _extractEmitter<T = any>(eventName: string): Subject<T> | undefined {
+  protected _extractEmitter<T = any>(
+    eventName: string
+  ): Subject<T> | undefined {
     if (!(this._events as Record<string, any>).hasOwnProperty(eventName)) {
       return undefined;
     }
@@ -94,10 +95,6 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     }
 
     emitter.next(value);
-  }
-
-  public readonly click = (e: any): void => {
-    this.emitEvent(this.click.name, e);
   }
 
   /**
@@ -181,16 +178,22 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     handler: Observable<any>,
     handlerName: string
   ): void => {
-
     const a = Object.getPrototypeOf(this);
     if (!a.hasOwnProperty(handlerName)) {
-      throw new Error(RuntimeErrors.EVENT_HANDLER__E__IS_NOT_EXISTS.replace(/\$h/, handlerName));
+      throw new Error(
+        RuntimeErrors.EVENT_HANDLER__E__IS_NOT_EXISTS.replace(
+          /\$h/,
+          handlerName
+        )
+      );
     }
 
-    this._interactionSubscriptions.push(handler.subscribe((value: any) => {
-      (this as Record<string, any>)[handlerName].apply(this, value);
-    }));
-  }
+    this._interactionSubscriptions.push(
+      handler.subscribe((value: any) => {
+        (this as Record<string, any>)[handlerName](value);
+      })
+    );
+  };
 
   /**
    * Removing all interactive eventEmitter's
@@ -221,7 +224,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
   }
 
   public dispose(
-    options: IComponentDisposeOptions = { disposeChildren: false }
+    options: IComponentDisposeOptions = { disposeChildren: true }
   ): void {
     this.removeChildren({ dispose: options.disposeChildren });
     this.removeInteractionHandlers();

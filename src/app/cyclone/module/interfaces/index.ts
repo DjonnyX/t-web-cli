@@ -1,7 +1,4 @@
 import ICClass from "./ICClass";
-import IModule from "./IModule";
+import IModule, { IModuleCmponents, IModules } from "./IModule";
 
-export {
-    ICClass,
-    IModule
-}
+export { ICClass, IModule, IModuleCmponents, IModules };

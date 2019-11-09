@@ -1,4 +1,12 @@
-import { SEGMENT_REGEX, TAG_REGEX, TAG_NAME, LEAD_TAG_REGEX, CLOSURE_TAG_REGEX } from "./regex";
+import {
+  SEGMENT_REGEX,
+  TAG_REGEX,
+  TAG_NAME,
+  LEAD_TAG_REGEX,
+  CLOSURE_TAG_REGEX,
+  PROCEDURE_SEGMENT_REGEXP,
+  PROCEDURE_TEXT_REGEX
+} from "./regex";
 
 describe("serializer.helper.regex", () => {
   it("SEGMENT_REGEX", () => {
@@ -55,5 +63,30 @@ describe("serializer.helper.regex", () => {
     const c2 = CLOSURE_TAG_REGEX.test(b);
 
     expect(!c1 && c2).toBeTruthy();
+  });
+
+  it("PROCEDURE_TEXT_REGEX", () => {
+    const a = "some{mySegment}text{a}some{n}text";
+
+    const m = a.match(PROCEDURE_TEXT_REGEX);
+    const result =
+      m[0] === "some" &&
+      m[1] === "{mySegment}" &&
+      m[2] === "text" &&
+      m[3] === "{a}" &&
+      m[4] === "some" &&
+      m[5] === "{n}" &&
+      m[6] === "text";
+    expect(result).toBeTruthy();
+  });
+
+  it("PROCEDURE_SEGMENT_REGEXP", () => {
+    const a = "{mySegment}";
+    const b = "some text";
+
+    const c1 = PROCEDURE_SEGMENT_REGEXP.test(a);
+    const c2 = PROCEDURE_SEGMENT_REGEXP.test(b);
+
+    expect(c1 && !c2).toBeTruthy();
   });
 });

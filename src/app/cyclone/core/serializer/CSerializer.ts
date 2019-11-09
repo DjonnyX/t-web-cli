@@ -14,7 +14,8 @@ import {
   PROCEDURE_ATTR_REGEX,
   ATTR_NAME_EVENT_REGEXP,
   PROCEDURE_TEXT_REGEX,
-  ATTR_NAME_COMP_REGEXP
+  ATTR_NAME_COMP_REGEXP,
+  PROCEDURE_SEGMENT_REGEXP
 } from "./helpers/regex";
 import { cyclone } from "..";
 
@@ -57,12 +58,6 @@ class CSerializer {
       }
 
       const selectorBody = mSelectorBody[0];
-      const selectorText = mSegment.replace(TAG_REGEX, "").replace(/^\s+/m, "");
-
-      const mSelectorText = selectorText.match(PROCEDURE_TEXT_REGEX);
-      if (mSelectorText && mSelectorText.length) {
-        // inner handler
-      }
 
       if (CLOSURE_TAG_REGEX.test(selectorBody) && mounter.parent) {
         mounter = mounter.parent;
@@ -215,8 +210,39 @@ class CSerializer {
           }
         }
 
-        if (selectorText) {
-          component.innerText = selectorText;
+        const selectorText = mSegment
+          .replace(TAG_REGEX, "")
+          .replace(/^\s+/m, "");
+
+        // inner text
+        if (PROCEDURE_SEGMENT_REGEXP.test(selectorText)) {
+          const mSelectorText = selectorText.match(PROCEDURE_TEXT_REGEX);
+
+          for (const innerTextSegment of mSelectorText) {
+            if (PROCEDURE_SEGMENT_REGEXP.test(innerTextSegment)) {
+              const segmentPropName = innerTextSegment.replace(/[\{|\}]/gm, "");
+
+              if (!(segmentPropName in owner)) {
+                // property not found
+                throw new Error(
+                  RuntimeErrors.PROPERTY__S__IS_NOT_DEFINED_OF__O_.replace(
+                    /\$s/,
+                    segmentPropName
+                  ).replace(/\$o/, Object.getPrototypeOf(owner).name)
+                );
+              }
+
+              const prop = owner.makePropForBinding(segmentPropName);
+
+              mounter.addPropertyToContentText(segmentPropName, prop);
+
+              continue;
+            }
+
+            mounter.addTextSegmentToContentText(innerTextSegment);
+          }
+        } else {
+          mounter.nativeElement.element.innerText = selectorText;
         }
 
         // before attach

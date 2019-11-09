@@ -10,6 +10,7 @@ import { IModule } from "../module";
 import { mount } from "../utils/dom";
 import { RuntimeErrors } from "../runtime";
 import { cyclone } from "../core";
+import { computeContentText } from "./base/helpers/ComponentHelpers";
 
 /**
  * Basic component
@@ -45,6 +46,11 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     [propName: string]: () => any;
   } = {};
 
+  protected _innerTextSegments: {
+    [propName: string]: Function;
+  } = {};
+  protected _innerTextSegmentsOrder = new Array<string>();
+
   protected _interactionSubscriptions = Array<Subscription>();
 
   constructor(options: IComponentOptions = Component.meta) {
@@ -68,11 +74,12 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
   }
 
   protected _detectChanges = (): void => {
-    this.applyBindedProps();
-    this.applyDOMBindedProps();
-  }
+    this.updateBindedProps();
+    this.updateDOMBindedProps();
+    this.updateContentText();
+  };
 
-  protected applyBindedProps(): void {
+  protected updateBindedProps(): void {
     const propNames = Object.keys(this._bindedProps);
 
     for (const propName of propNames) {
@@ -81,7 +88,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     }
   }
 
-  protected applyDOMBindedProps(): void {
+  protected updateDOMBindedProps(): void {
     const propNames = Object.keys(this._bindedDOMProps);
 
     for (const propName of propNames) {
@@ -90,20 +97,22 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     }
   }
 
+  protected updateContentText(): void {
+    this.nativeElement.element.innerHTML = computeContentText(this._innerTextSegmentsOrder, this._innerTextSegments);
+  }
+
   /**
    * Prepares and returns a property for binding
    */
   public readonly makePropForBinding = <T = any>(
     propName: string
   ): (() => T) => {
-    if (
-      !(propName in (this._propsForBinding as Record<string, any>))
-    ) {
-      (this._propsForBinding as Record<string, any>)[propName] = (): T => {
+    if (!(propName in this._propsForBinding)) {
+      this._propsForBinding[propName] = (): T => {
         return (this as Record<string, any>)[propName];
       };
     }
-    return (this._propsForBinding as Record<string, any>)[propName];
+    return this._propsForBinding[propName];
   };
 
   public readonly bindProperty = <T = any>(
@@ -111,10 +120,12 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     externalProperty: () => T
   ): void => {
     if (propName in this._bindedProps) {
-      throw new Error(RuntimeErrors.PROPERTY__P__ALREADY_BINDED.replace(/\$p/, propName));
+      throw new Error(
+        RuntimeErrors.PROPERTY__P__ALREADY_BINDED.replace(/\$p/, propName)
+      );
     }
 
-    (this._bindedProps as Record<string, any>)[propName] = externalProperty;
+    this._bindedProps[propName] = externalProperty;
   };
 
   public readonly bindDomProperty = <T = any>(
@@ -122,10 +133,29 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     externalProperty: () => T
   ): void => {
     if (propName in this._bindedDOMProps) {
-      throw new Error(RuntimeErrors.PROPERTY__P__ALREADY_BINDED.replace(/\$p/, propName));
+      throw new Error(
+        RuntimeErrors.PROPERTY__P__ALREADY_BINDED.replace(/\$p/, propName)
+      );
     }
 
-    (this._bindedDOMProps as Record<string, any>)[propName] = externalProperty;
+    this._bindedDOMProps[propName] = externalProperty;
+  };
+
+  public readonly addPropertyToContentText = <T = any>(
+    propName: string,
+    externalProperty: () => T
+  ): void => {
+    if (propName in this._innerTextSegments) {
+      return;
+    }
+    this._innerTextSegments[propName] = externalProperty;
+    this._innerTextSegmentsOrder.push(propName);
+  };
+
+  public readonly addTextSegmentToContentText = (
+    text: string,
+  ): void => {
+    this._innerTextSegmentsOrder.push(text);
   };
 
   public readonly addInteractionEvent = <T = any>(
@@ -192,7 +222,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
    */
   public afterAttach = (): void => {
     this.markForVerify();
-  }
+  };
 
   public addChild<E extends keyof HTMLElementTagNameMap = any>(
     child: Component<E>
@@ -244,10 +274,6 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     child: Component<E>
   ): boolean {
     return this._children.indexOf(child) > -1;
-  }
-
-  public set innerText(value: string) {
-    this.nativeElement.element.innerText = value;
   }
 
   protected injectChildrenFromTemplate(

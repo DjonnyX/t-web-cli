@@ -1,4 +1,4 @@
-import HTMLComponent from "./HTMLComponent";
+import { HTMLComponent } from ".";
 import CModule from "../module/CModule";
 import { mount } from "../utils/dom";
 import { Observable, timer } from "rxjs";

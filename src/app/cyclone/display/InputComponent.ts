@@ -1,7 +1,7 @@
 import {
   IComponentOptions,
 } from "./interfaces";
-import HTMLComponent from "./HtmlComponent";
+import HTMLComponent from "./HTMLComponent";
 
 /**
  * Input component

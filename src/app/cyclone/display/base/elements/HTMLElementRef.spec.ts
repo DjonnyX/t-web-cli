@@ -1,4 +1,3 @@
-import ElementRef from "./ElementRef";
 import HTMLElementRef from "./HTMLElementRef";
 
 /**
@@ -38,8 +37,16 @@ class HTMLElementRefTest<E extends HTMLElement = any> extends HTMLElementRef<
     return this._listenerTypesMap;
   }
 
+  constructor() {
+    super();
+  }
+
   public createNativeElement(): void {
     super._createNativeElement();
+  }
+
+  public dispose(): void {
+    super.dispose();
   }
 }
 
@@ -54,8 +61,10 @@ const createElements = <E extends HTMLElement = any>(
   return elements;
 };
 
-const disposeElements = <T extends keyof HTMLElementTagNameMap, K = HTMLElementTagNameMap[T]>(
-  elements: Array<ElementRef<K>>,
+const disposeElements = <
+  E extends HTMLElement = any
+>(
+  elements: Array<HTMLElementRefTest<E>>,
   count = -1
 ): void => {
   const l = elements.length;

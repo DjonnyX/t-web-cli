@@ -93,8 +93,12 @@ export default class HTMLElementRef<E extends HTMLElement = any> extends Element
     clearAttribute: true,
     clearInnerHtml: true
   }): void {
-    
+
     super.dispose();
+  
+    HTMLElementRef.__toPool(this.type, this);
+
+    this.removeAllListeners();
 
     if (options.clearClasses) {
       removeDomClasses(this._element as any);

@@ -1,20 +1,22 @@
-import { Component } from ".";
+import { HTMLComponent } from ".";
 import CModule from "../module/CModule";
 import { mount } from "../utils/dom";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Observable, timer } from "rxjs";
+import { IComponentOptions } from "./interfaces";
 
 const testModule = new CModule();
 
 const INNER_TEXT = "some text";
 
-class TestComponent extends Component {
-  public static readonly meta = {
-    template: `
-          <sub-component className="clicker" (click)={clickHandler}>
-            <div class="header">{title}</div>
+class TestComponent extends HTMLComponent {
+  public static readonly meta: IComponentOptions = {
+    template: `<sub-component class="clicker" (click)={clickHandler}>
+            <div class="header">s {title} s</div>
             <div className={customClassName}>
-          </sub-component>
-        `,
+            <div class="footer">{title}</div>
+          </sub-component>`,
+    elementRefType: "div",
     selectorName: "test-component",
     cModule: testModule
   };
@@ -32,11 +34,14 @@ class TestComponent extends Component {
     return this._isTesting ? "tested-class" : "";
   }
 
-  public get children(): Array<Component<any>> {
+  public get children(): Array<HTMLComponent<any>> {
     return this._children;
   }
 
-  public readonly title = INNER_TEXT;
+  private _title = INNER_TEXT;
+  public get title(): string {
+    return this._title;
+  }
 
   constructor() {
     super(TestComponent.meta);
@@ -54,7 +59,7 @@ class TestComponent extends Component {
   }
 }
 
-class SubComponent extends Component {
+class SubComponent extends HTMLComponent {
   public static readonly meta = {
     template: `<span class="sub-test-class">test</span>`,
     selectorName: "sub-component",
@@ -76,7 +81,7 @@ class SubComponent extends Component {
   }
 }
 
-class TestApp extends Component {
+class TestApp extends HTMLComponent {
   public static readonly meta = {
     template: `<test-component></test-component>`,
     selectorName: "root",
@@ -118,12 +123,27 @@ describe("Component injection", () => {
     expect(TestComponent.instance.contains(SubComponent.instance)).toBeTruthy();
   });
 
-  /* it(`procedurical text must be equal "${INNER_TEXT}"`, () => {
-    const header = TestComponent.instance.nativeElement.element.getElementsByClassName(
-      "header"
-    )[0];
-    expect(header.innerHTML).toEqual(INNER_TEXT);
-  }); */
+  it(`procedurical text must be equal "${INNER_TEXT}"`, () => {
+    return timer(10) // wait for apply pros
+      .toPromise()
+      .then(() => {
+        const header = TestComponent.instance.nativeElement.element.getElementsByClassName(
+          "header"
+        )[0];
+        return expect(header.innerHTML).toEqual(`s ${INNER_TEXT} s`);
+      });
+  });
+
+  it(`procedurical text must be equal "${INNER_TEXT}"`, () => {
+    return timer(10) // waiting for applying props
+      .toPromise()
+      .then(() => {
+        const footer = TestComponent.instance.nativeElement.element.getElementsByClassName(
+          "footer"
+        )[0];
+        return expect(footer.innerHTML).toEqual(`${INNER_TEXT}`);
+      });
+  });
 
   it("reaction must equal 2", () => {
     const clicker = TestComponent.instance.nativeElement.element.getElementsByClassName(
@@ -149,14 +169,14 @@ describe("Component injection", () => {
       });
   });
 
-  it("After calling removeChild children length must be equal 1", () => {
+  it("After calling removeChild children length must be equal 0)", () => {
     TestComponent.instance.removeChild(TestComponent.instance.children[0], {
       dispose: false
     });
     expect(TestComponent.instance.children.length).toEqual(0);
   });
 
-  it("contain method must br return false", () => {
+  it("contain method must be return false", () => {
     expect(
       TestComponent.instance.contains(SubComponent.instance)
     ).not.toBeTruthy();

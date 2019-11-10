@@ -1,30 +1,27 @@
 import { Subject, Observable, Subscription } from "rxjs";
-import ElementRef from "./base/ElementRef";
 import {
   IComponentOptions,
   IComponentDisposeOptions,
   IComponentRemoveChildOptions
-} from "./interfaces";
-import CSerializer from "../core/serializer/CSerializer";
-import { IModule } from "../module";
-import { mount } from "../utils/dom";
-import { RuntimeErrors } from "../runtime";
-import { cyclone } from "../core";
+} from "../../interfaces";
+import { IModule } from "../../../module";
+import { mount } from "../../../utils/dom";
+import { RuntimeErrors } from "../../../runtime";
+import { cyclone, CSerializer } from "../../../core";
+import BaseComponent from "./BaseComponent";
 
 /**
- * Basic component
+ * Basic html-component
  */
-export default class Component<E extends keyof HTMLElementTagNameMap = any> {
+export default abstract class NodeComponent<Node> extends BaseComponent {
   public static meta: IComponentOptions;
 
-  public readonly nativeElement: ElementRef<E>;
-
-  protected _children = new Array<Component<any>>();
-
-  protected _parent!: Component<any>;
-  public get parent(): Component<any> {
+  protected _parent!: NodeComponent<any>;
+  public get parent(): NodeComponent<any> {
     return this._parent;
   }
+
+  protected _children = new Array<NodeComponent<any>>();
 
   protected _events: {
     [eventType: string]: {
@@ -47,19 +44,6 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
 
   protected _interactionSubscriptions = Array<Subscription>();
 
-  constructor(options: IComponentOptions = Component.meta) {
-    const { selectorName, elementRefType, template } = options;
-
-    this.nativeElement = ElementRef.new({
-      elementRefType,
-      selectorName
-    });
-
-    if (template && options.cModule) {
-      this.injectChildrenFromTemplate(template, options.cModule);
-    }
-  }
-
   public markForVerify(): void {
     cyclone.addDeferCall(this._detectChanges);
     for (const child of this._children) {
@@ -68,11 +52,11 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
   }
 
   protected _detectChanges = (): void => {
-    this.applyBindedProps();
-    this.applyDOMBindedProps();
-  }
+    this.updateBindedProps();
+    this.updateDOMBindedProps();
+  };
 
-  protected applyBindedProps(): void {
+  protected updateBindedProps(): void {
     const propNames = Object.keys(this._bindedProps);
 
     for (const propName of propNames) {
@@ -81,12 +65,12 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     }
   }
 
-  protected applyDOMBindedProps(): void {
+  protected updateDOMBindedProps(): void {
     const propNames = Object.keys(this._bindedDOMProps);
 
     for (const propName of propNames) {
       const extProp = this._bindedDOMProps[propName];
-      (this.nativeElement.element as Record<string, any>)[propName] = extProp();
+      (this.nativeElement.element as any)[propName] = extProp();
     }
   }
 
@@ -96,14 +80,12 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
   public readonly makePropForBinding = <T = any>(
     propName: string
   ): (() => T) => {
-    if (
-      !(propName in (this._propsForBinding as Record<string, any>))
-    ) {
-      (this._propsForBinding as Record<string, any>)[propName] = (): T => {
+    if (!(propName in this._propsForBinding)) {
+      this._propsForBinding[propName] = (): T => {
         return (this as Record<string, any>)[propName];
       };
     }
-    return (this._propsForBinding as Record<string, any>)[propName];
+    return this._propsForBinding[propName];
   };
 
   public readonly bindProperty = <T = any>(
@@ -111,10 +93,12 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     externalProperty: () => T
   ): void => {
     if (propName in this._bindedProps) {
-      throw new Error(RuntimeErrors.PROPERTY__P__ALREADY_BINDED.replace(/\$p/, propName));
+      throw new Error(
+        RuntimeErrors.PROPERTY__P__ALREADY_BINDED.replace(/\$p/, propName)
+      );
     }
 
-    (this._bindedProps as Record<string, any>)[propName] = externalProperty;
+    this._bindedProps[propName] = externalProperty;
   };
 
   public readonly bindDomProperty = <T = any>(
@@ -122,10 +106,12 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     externalProperty: () => T
   ): void => {
     if (propName in this._bindedDOMProps) {
-      throw new Error(RuntimeErrors.PROPERTY__P__ALREADY_BINDED.replace(/\$p/, propName));
+      throw new Error(
+        RuntimeErrors.PROPERTY__P__ALREADY_BINDED.replace(/\$p/, propName)
+      );
     }
 
-    (this._bindedDOMProps as Record<string, any>)[propName] = externalProperty;
+    this._bindedDOMProps[propName] = externalProperty;
   };
 
   public readonly addInteractionEvent = <T = any>(
@@ -192,23 +178,23 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
    */
   public afterAttach = (): void => {
     this.markForVerify();
-  }
+  };
 
-  public addChild<E extends keyof HTMLElementTagNameMap = any>(
-    child: Component<E>
-  ): Component<E> {
+  public addChild<E extends Node>(
+    child: NodeComponent<E>
+  ): NodeComponent<E> {
     this._children.push(child);
     child._parent = this;
 
-    mount(this.nativeElement.element, child.nativeElement.element);
+    mount(this.nativeElement.element as any, child.nativeElement.element as any);
 
     return child;
   }
 
-  public removeChild<E extends keyof HTMLElementTagNameMap = any>(
-    child: Component<E>,
+  public removeChild<E extends Node = any>(
+    child: NodeComponent<E>,
     options: IComponentRemoveChildOptions = { dispose: false }
-  ): Component<E> {
+  ): NodeComponent<E> {
     const index = this._children.indexOf(child);
     if (index > -1) {
       this._children.splice(index, 1);
@@ -240,14 +226,10 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     }
   }
 
-  public contains<E extends keyof HTMLElementTagNameMap = any>(
-    child: Component<E>
+  public contains<E extends Node = any>(
+    child: NodeComponent<E>
   ): boolean {
     return this._children.indexOf(child) > -1;
-  }
-
-  public set innerText(value: string) {
-    this.nativeElement.element.innerText = value;
   }
 
   protected injectChildrenFromTemplate(

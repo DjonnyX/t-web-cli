@@ -1,11 +1,12 @@
-import { Component, IComponentOptions } from "./cyclone/display";
+import { HTMLComponent, IComponentOptions } from "./cyclone/display";
 import { tInputModule } from "./components";
 import rootModule from "./root-module";
 
-export default class App extends Component {
+export default class App extends HTMLComponent {
   public static readonly meta: IComponentOptions = {
     template: `<div className={value}>
-      Test app worked
+      Test app worked with {value}
+      <div>{value}</div>
       <t-input (changeValue)={inputChange} [value]={value}></t-input>
       <button (click)={clickHandler}>My button</button>
     </div>`,
@@ -13,7 +14,7 @@ export default class App extends Component {
     cModule: rootModule
   };
 
-  private _value: string;
+  private _value = "my value";
   public set value(v: string) {
     if (this._value !== v) {
       this._value = v;
@@ -23,6 +24,9 @@ export default class App extends Component {
   }
   public get value(): string {
     return this._value;
+  }
+  public get r(): string {
+    return "this._value";
   }
 
   constructor() {

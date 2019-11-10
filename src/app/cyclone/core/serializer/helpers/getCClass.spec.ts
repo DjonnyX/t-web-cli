@@ -1,10 +1,10 @@
-import { Component } from "../../../display";
+import { HTMLComponent } from "../../../display";
 import CModule from "../../../module/CModule";
 import getCClass from "./getCClass";
 
 const testModule = new CModule();
 
-class TestComponent extends Component {
+class TestComponent extends HTMLComponent {
   public static readonly meta = {
     selectorName: "test-component",
     cModule: testModule

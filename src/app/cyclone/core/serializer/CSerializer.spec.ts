@@ -1,10 +1,10 @@
-import { Component } from "../../display";
+import { HTMLComponent } from "../../display";
 import CModule from "../../module/CModule";
 import { mount } from "../../utils/dom";
 
 const testModule = new CModule();
 
-class TestLiComponent extends Component<"ul"> {
+class TestLiComponent extends HTMLComponent<"ul"> {
   public static meta = {
     template: `<div>test component</div>`,
     selectorName: "test-list-component",
@@ -16,7 +16,7 @@ class TestLiComponent extends Component<"ul"> {
   }
 }
 
-class TestApp extends Component {
+class TestApp extends HTMLComponent {
   public static meta = {
     template: `<segment>
       <span class="test-class">

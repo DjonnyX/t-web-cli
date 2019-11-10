@@ -1,12 +1,12 @@
 import {
   IComponentOptions,
 } from "./interfaces";
-import { Component } from ".";
+import HTMLComponent from "./HTMLComponent";
 
 /**
  * Input component
  */
-export default class InputComponent extends Component<"input"> {
+export default class InputComponent extends HTMLComponent<HTMLInputElement> {
   public static meta: IComponentOptions = {
       elementRefType: "input",
   };

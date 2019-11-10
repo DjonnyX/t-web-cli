@@ -1,7 +1,7 @@
-import { Component } from "../../display";
+import { BaseComponent, IComponentOptions } from "../../display";
 
 export interface IModuleCmponents {
-  [x: string]: new () => Component<any>;
+  [x: string]: new (options: IComponentOptions) => BaseComponent<any>;
 }
 
 export interface IModules {

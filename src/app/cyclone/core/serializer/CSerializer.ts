@@ -1,5 +1,5 @@
 import { RuntimeErrors } from "../../runtime";
-import { Component } from "../../display";
+import { NodeComponent, HTMLComponent, BaseComponent } from "../../display";
 import { IModule } from "../../module";
 import { getCClass } from "./helpers";
 import {
@@ -14,9 +14,11 @@ import {
   PROCEDURE_ATTR_REGEX,
   ATTR_NAME_EVENT_REGEXP,
   PROCEDURE_TEXT_REGEX,
-  ATTR_NAME_COMP_REGEXP
+  ATTR_NAME_COMP_REGEXP,
+  PROCEDURE_SEGMENT_REGEXP
 } from "./helpers/regex";
 import { cyclone } from "..";
+import TextComponent from "../../display/TextComponent";
 
 /**
  * Serializing simple template with events, binding methods
@@ -32,7 +34,7 @@ import { cyclone } from "..";
  */
 class CSerializer {
   public static parse(
-    owner: Component<any>,
+    owner: NodeComponent<any>,
     template: string,
     cModule: IModule
   ): void {
@@ -46,23 +48,55 @@ class CSerializer {
       return;
     }
 
-    let mounter: Component<any> = owner;
+    let mounter: NodeComponent<Element> = owner;
 
     for (let i = 0, l = mSegments.length; i < l; i++) {
       const mSegment = mSegments[i];
       const mSelectorBody = mSegment.match(TAG_REGEX);
 
       if (!mSelectorBody) {
+        // text content
+        const component = new TextComponent();
+
+        if (PROCEDURE_SEGMENT_REGEXP.test(mSegment)) {
+          const mSelectorText = mSegment.match(PROCEDURE_TEXT_REGEX);
+
+          for (const innerTextSegment of mSelectorText) {
+            if (PROCEDURE_SEGMENT_REGEXP.test(innerTextSegment)) {
+              const segmentPropName = innerTextSegment.replace(/[\{|\}]/gm, "");
+
+              if (!(segmentPropName in owner)) {
+                // property not found
+                throw new Error(
+                  RuntimeErrors.PROPERTY__S__IS_NOT_DEFINED_OF__O_.replace(
+                    /\$s/,
+                    segmentPropName
+                  ).replace(/\$o/, Object.getPrototypeOf(owner).name)
+                );
+              }
+
+              const prop = owner.makePropForBinding(segmentPropName);
+
+              component.addPropertyToContentText(
+                segmentPropName,
+                prop
+              );
+
+              continue;
+            }
+
+            component.addTextSegmentToContentText(
+              innerTextSegment
+            );
+          }
+        } else if ("textContent" in mounter.nativeElement.element && mSegment) {
+          component.data = mSegment;
+        }
+        this.attach(mounter, component);
         continue;
       }
 
       const selectorBody = mSelectorBody[0];
-      const selectorText = mSegment.replace(TAG_REGEX, "").replace(/^\s+/m, "");
-
-      const mSelectorText = selectorText.match(PROCEDURE_TEXT_REGEX);
-      if (mSelectorText && mSelectorText.length) {
-        // inner handler
-      }
 
       if (CLOSURE_TAG_REGEX.test(selectorBody) && mounter.parent) {
         mounter = mounter.parent;
@@ -77,16 +111,8 @@ class CSerializer {
         }
 
         const tName = mTagName[0];
-        const CClass = getCClass(cModule, tName);
-        let component: Component<any>;
-        if (!CClass) {
-          component = new Component({
-            elementRefType: tName as any,
-            cModule // transmit to children
-          });
-        } else {
-          component = new CClass();
-        }
+
+        const component = this.getHTMLComponent(tName, cModule);
 
         // add attrs
         const mAttributes = selectorBody.match(ATTRS_REGEX);
@@ -215,20 +241,31 @@ class CSerializer {
           }
         }
 
-        if (selectorText) {
-          component.innerText = selectorText;
-        }
+        this.attach(mounter, component);
 
-        // before attach
-        component.beforeAttach();
-
-        mounter.addChild(component);
-
-        cyclone.addDeferCall(component.afterAttach);
-
-        mounter = component;
+        mounter = component as any;
       }
     }
+  }
+
+  protected static getHTMLComponent(name: string, cModule: IModule): NodeComponent<any> {
+    const CClass = getCClass(cModule, name);
+
+    return CClass
+      ? (new CClass() as any)
+      : new HTMLComponent({
+          elementRefType: name as any,
+          cModule // transmit to children
+        });
+  }
+
+  protected static attach(mounter: NodeComponent<Node>, component: BaseComponent<Node>): void {
+    
+    component.beforeAttach();
+
+    mounter.addChild(component as any);
+
+    cyclone.addDeferCall(component.afterAttach);
   }
 }
 

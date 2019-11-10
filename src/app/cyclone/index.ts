@@ -4,5 +4,5 @@ import * as utils from "./utils";
 /**
  * UI kit
  */
-export { Component } from "./display";
+export { HTMLComponent, TextComponent } from "./display";
 export { display, utils };

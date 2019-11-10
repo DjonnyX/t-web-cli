@@ -2,13 +2,13 @@ import { Subject, Observable, Subscription } from "rxjs";
 import {
   IComponentOptions,
   IComponentDisposeOptions,
-  IComponentRemoveChildOptions
+  IComponentRemoveChildOptions,
 } from "./interfaces";
 import { IModule } from "../module";
 import { mount } from "../utils/dom";
 import { RuntimeErrors } from "../runtime";
 import { cyclone, CSerializer } from "../core";
-import { HTMLElementRef, NodeComponent } from "./base";
+import { HTMLElementRef, NodeComponent, addMaintainerAttributes } from "./base";
 
 /**
  * Basic html-component
@@ -55,6 +55,8 @@ export default class HTMLComponent<T = any> extends NodeComponent<T> {
       elementRefType = options.elementRefType;
       selectorName = options.selectorName;
       template = options.template;
+
+      addMaintainerAttributes(this, options.maintainer);
     }
 
     this.nativeElement = HTMLElementRef.new({

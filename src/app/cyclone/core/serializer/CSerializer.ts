@@ -1,5 +1,5 @@
 import { RuntimeErrors } from "../../runtime";
-import { NodeComponent, HTMLComponent, BaseComponent } from "../../display";
+import { NodeComponent, HTMLComponent, BaseComponent, TextComponent } from "../../display";
 import { IModule } from "../../module";
 import { getCClass } from "./helpers";
 import {
@@ -18,7 +18,6 @@ import {
   PROCEDURE_SEGMENT_REGEXP
 } from "./helpers/regex";
 import { cyclone } from "..";
-import TextComponent from "../../display/TextComponent";
 
 /**
  * Serializing simple template with events, binding methods
@@ -259,7 +258,7 @@ class CSerializer {
         });
   }
 
-  protected static attach(mounter: NodeComponent<Node>, component: BaseComponent<Node>): void {
+  protected static attach(mounter: NodeComponent<Node>, component: BaseComponent): void {
     
     component.beforeAttach();
 

@@ -8,7 +8,7 @@ import { IModule } from "../module";
 import { mount } from "../utils/dom";
 import { RuntimeErrors } from "../runtime";
 import { cyclone, CSerializer } from "../core";
-import { HTMLElementRef, NodeComponent, computeContentText } from "./base";
+import { HTMLElementRef, NodeComponent } from "./base";
 
 /**
  * Basic html-component
@@ -42,21 +42,15 @@ export default class HTMLComponent<T = any> extends NodeComponent<T> {
     [propName: string]: () => any;
   } = {};
 
-  protected _innerTextSegments: {
-    [propName: string]: Function;
-  } = {};
-  protected _innerTextSegmentsOrder = new Array<string>();
-
   protected _interactionSubscriptions = Array<Subscription>();
 
   constructor(options: IComponentOptions = HTMLComponent.meta) {
     super();
-    const { isTextNode, selectorName, elementRefType, template } = options;
+    const { selectorName, elementRefType, template } = options;
 
     this.nativeElement = HTMLElementRef.new({
       elementRefType,
-      selectorName,
-      isTextNode
+      selectorName
     }) as any;
 
     if (template && options.cModule) {
@@ -91,13 +85,6 @@ export default class HTMLComponent<T = any> extends NodeComponent<T> {
     for (const propName of propNames) {
       const extProp = this._bindedDOMProps[propName];
       (this.nativeElement.element as Record<string, any>)[propName] = extProp();
-    }
-  }
-
-  protected updateContentText(): void {
-    const textContent = computeContentText(this._innerTextSegmentsOrder, this._innerTextSegments);
-    if (textContent && textContent !== this.nativeElement.element.textContent) {
-      this.nativeElement.element.textContent = textContent;
     }
   }
 
@@ -139,23 +126,6 @@ export default class HTMLComponent<T = any> extends NodeComponent<T> {
     }
 
     this._bindedDOMProps[propName] = externalProperty;
-  };
-
-  public readonly addPropertyToContentText = <T = any>(
-    propName: string,
-    externalProperty: () => T
-  ): void => {
-    if (propName in this._innerTextSegments) {
-      return;
-    }
-    this._innerTextSegments[propName] = externalProperty;
-    this._innerTextSegmentsOrder.push(propName);
-  };
-
-  public readonly addTextSegmentToContentText = (
-    text: string,
-  ): void => {
-    this._innerTextSegmentsOrder.push(text);
   };
 
   public readonly addInteractionEvent = <T = any>(

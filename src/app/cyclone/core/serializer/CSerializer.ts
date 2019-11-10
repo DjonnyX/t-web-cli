@@ -1,5 +1,5 @@
 import { RuntimeErrors } from "../../runtime";
-import { NodeComponent, HTMLComponent, BaseComponent } from "../../display";
+import { NodeComponent, HTMLComponent } from "../../display";
 import { IModule } from "../../module";
 import { getCClass } from "./helpers";
 import {
@@ -56,6 +56,7 @@ class CSerializer {
 
       if (!mSelectorBody) {
         // text content
+        continue;
         if (PROCEDURE_SEGMENT_REGEXP.test(mSegment)) {
           const mSelectorText = mSegment.match(PROCEDURE_TEXT_REGEX);
 
@@ -90,6 +91,7 @@ class CSerializer {
         } else if ("textContent" in mounter.nativeElement.element && mSegment) {
           (mounter.nativeElement.element as Element).textContent = mSegment;
         }
+        continue;
       }
 
       const selectorBody = mSelectorBody[0];

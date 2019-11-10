@@ -5,7 +5,7 @@ import rootModule from "./root-module";
 export default class App extends HTMLComponent {
   public static readonly meta: IComponentOptions = {
     template: `<div className={value}>
-      Test app worked with
+      Test app worked with {value}
       <div>{value}</div>
       <t-input (changeValue)={inputChange} [value]={value}></t-input>
       <button (click)={clickHandler}>My button</button>

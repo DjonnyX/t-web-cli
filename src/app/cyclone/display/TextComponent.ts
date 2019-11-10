@@ -1,16 +1,22 @@
-import {
-  IComponentOptions,
-} from "./interfaces";
 import { cyclone } from "../core";
 import { computeContentText } from "./base/helpers/ComponentHelpers";
 import BaseComponent from "./base/components/BaseComponent";
 import { TextElementRef } from "./base";
 
+const TEXT_ELREF_TYPE = "__text-node__"; // necessary to determine
+
 /**
  * Basic component
  */
 export default class TextComponent<E extends Text = any> extends BaseComponent<E> {
-  public static meta: IComponentOptions = {};
+
+  public get data(): string {
+    return (this.nativeElement.element as Text).data;
+  }
+
+  public set data(v: string) {
+    (this.nativeElement.element as Text).data = v;
+  }
 
   protected _propsForBinding: {
     [propName: string]: () => any;
@@ -21,15 +27,14 @@ export default class TextComponent<E extends Text = any> extends BaseComponent<E
   } = {};
   protected _innerTextSegmentsOrder = new Array<string>();
 
-  constructor(options: typeof TextComponent.meta) {
+  constructor() {
     super();
   
-    const { selectorName, elementRefType } = options;
+    const elementRefType = TEXT_ELREF_TYPE;
 
     this.nativeElement = TextElementRef.new({
-      elementRefType,
-      selectorName
-    });
+      elementRefType
+    } as any);
   }
 
   public markForVerify(): void {

@@ -1,5 +1,5 @@
 import { RuntimeErrors } from "../../runtime";
-import { NodeComponent, HTMLComponent } from "../../display";
+import { NodeComponent, HTMLComponent, BaseComponent } from "../../display";
 import { IModule } from "../../module";
 import { getCClass } from "./helpers";
 import {
@@ -56,7 +56,8 @@ class CSerializer {
 
       if (!mSelectorBody) {
         // text content
-        continue;
+        const component = new TextComponent();
+
         if (PROCEDURE_SEGMENT_REGEXP.test(mSegment)) {
           const mSelectorText = mSegment.match(PROCEDURE_TEXT_REGEX);
 
@@ -76,7 +77,7 @@ class CSerializer {
 
               const prop = owner.makePropForBinding(segmentPropName);
 
-              ((mounter as unknown) as TextComponent).addPropertyToContentText(
+              component.addPropertyToContentText(
                 segmentPropName,
                 prop
               );
@@ -84,13 +85,14 @@ class CSerializer {
               continue;
             }
 
-            ((mounter as unknown) as TextComponent).addTextSegmentToContentText(
+            component.addTextSegmentToContentText(
               innerTextSegment
             );
           }
         } else if ("textContent" in mounter.nativeElement.element && mSegment) {
-          (mounter.nativeElement.element as Element).textContent = mSegment;
+          component.data = mSegment;
         }
+        this.attach(mounter, component);
         continue;
       }
 
@@ -239,12 +241,7 @@ class CSerializer {
           }
         }
 
-        // before attach
-        component.beforeAttach();
-
-        mounter.addChild(component as any);
-
-        cyclone.addDeferCall(component.afterAttach);
+        this.attach(mounter, component);
 
         mounter = component as any;
       }
@@ -260,6 +257,15 @@ class CSerializer {
           elementRefType: name as any,
           cModule // transmit to children
         });
+  }
+
+  protected static attach(mounter: NodeComponent<Node>, component: BaseComponent<Node>): void {
+    
+    component.beforeAttach();
+
+    mounter.addChild(component as any);
+
+    cyclone.addDeferCall(component.afterAttach);
   }
 }
 

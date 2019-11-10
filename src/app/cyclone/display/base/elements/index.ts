@@ -1,5 +1,5 @@
 import TextElementRef from "./TextElementRef";
 import HTMLElementRef from "./HTMLElementRef";
-import IElementRef from "./ElementRef";
+import IElementRef, { DEFAULT_NATIVE_ELEMENT_TYPE } from "./ElementRef";
 
-export { TextElementRef, HTMLElementRef, IElementRef };
+export { TextElementRef, HTMLElementRef, IElementRef, DEFAULT_NATIVE_ELEMENT_TYPE };

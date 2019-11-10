@@ -46,7 +46,16 @@ export default class HTMLComponent<T = any> extends NodeComponent<T> {
 
   constructor(options: IComponentOptions = HTMLComponent.meta) {
     super();
-    const { selectorName, elementRefType, template } = options;
+
+    let elementRefType: keyof HTMLElementTagNameMap;
+    let selectorName: string;
+    let template: string;
+
+    if (options) {
+      elementRefType = options.elementRefType;
+      selectorName = options.selectorName;
+      template = options.template;
+    }
 
     this.nativeElement = HTMLElementRef.new({
       elementRefType,

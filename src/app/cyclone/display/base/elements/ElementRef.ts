@@ -1,7 +1,7 @@
 import { RuntimeErrors } from "../../../runtime";
 import { IElementRefOptions } from "../interfaces";
 
-const DEFAULT_NATIVE_ELEMENT_TYPE = "div";
+export const DEFAULT_NATIVE_ELEMENT_TYPE = "div";
 
 /**
  * ElementRef

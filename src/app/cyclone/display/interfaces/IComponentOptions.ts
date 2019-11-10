@@ -2,8 +2,8 @@
 import { IElementRefOptions } from "../base/interfaces";
 import { IModule } from "../../module";
 
-interface IComponentOptions extends IElementRefOptions {
-    template?: string;
-    cModule?: IModule;
+interface IComponentOptions<M = any> extends IElementRefOptions {
+  template?: string;
+  cModule?: IModule;
 }
 export default IComponentOptions;

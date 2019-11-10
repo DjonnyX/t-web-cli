@@ -1,4 +1,4 @@
-export const SEGMENT_REGEX = /<.([^<]+)/mig;
+export const SEGMENT_REGEX = /(<.[^<]+>)|[^<.+>]+/mig;
 export const TAG_REGEX = /(?=<).([^>]+>|\/>)/mig;
 export const TAG_NAME = /[\w.\-\_]+/;
 export const REPL_REGEX = /{{.([^r}}][^}}])?}}/;

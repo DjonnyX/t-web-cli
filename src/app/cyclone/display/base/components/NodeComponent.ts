@@ -1,31 +1,27 @@
 import { Subject, Observable, Subscription } from "rxjs";
-import ElementRef from "./base/ElementRef";
 import {
   IComponentOptions,
   IComponentDisposeOptions,
   IComponentRemoveChildOptions
-} from "./interfaces";
-import CSerializer from "../core/serializer/CSerializer";
-import { IModule } from "../module";
-import { mount } from "../utils/dom";
-import { RuntimeErrors } from "../runtime";
-import { cyclone } from "../core";
-import { computeContentText } from "./base/helpers/ComponentHelpers";
+} from "../../interfaces";
+import { IModule } from "../../../module";
+import { mount } from "../../../utils/dom";
+import { RuntimeErrors } from "../../../runtime";
+import { cyclone, CSerializer } from "../../../core";
+import BaseComponent from "./BaseComponent";
 
 /**
- * Basic component
+ * Basic html-component
  */
-export default class Component<E extends keyof HTMLElementTagNameMap = any> {
+export default abstract class NodeComponent<Node> extends BaseComponent {
   public static meta: IComponentOptions;
 
-  public readonly nativeElement: ElementRef<E>;
-
-  protected _children = new Array<Component<any>>();
-
-  protected _parent!: Component<any>;
-  public get parent(): Component<any> {
+  protected _parent!: NodeComponent<any>;
+  public get parent(): NodeComponent<any> {
     return this._parent;
   }
+
+  protected _children = new Array<NodeComponent<any>>();
 
   protected _events: {
     [eventType: string]: {
@@ -46,25 +42,7 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     [propName: string]: () => any;
   } = {};
 
-  protected _innerTextSegments: {
-    [propName: string]: Function;
-  } = {};
-  protected _innerTextSegmentsOrder = new Array<string>();
-
   protected _interactionSubscriptions = Array<Subscription>();
-
-  constructor(options: IComponentOptions = Component.meta) {
-    const { selectorName, elementRefType, template } = options;
-
-    this.nativeElement = ElementRef.new({
-      elementRefType,
-      selectorName
-    });
-
-    if (template && options.cModule) {
-      this.injectChildrenFromTemplate(template, options.cModule);
-    }
-  }
 
   public markForVerify(): void {
     cyclone.addDeferCall(this._detectChanges);
@@ -76,7 +54,6 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
   protected _detectChanges = (): void => {
     this.updateBindedProps();
     this.updateDOMBindedProps();
-    this.updateContentText();
   };
 
   protected updateBindedProps(): void {
@@ -93,12 +70,8 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
 
     for (const propName of propNames) {
       const extProp = this._bindedDOMProps[propName];
-      (this.nativeElement.element as Record<string, any>)[propName] = extProp();
+      (this.nativeElement.element as any)[propName] = extProp();
     }
-  }
-
-  protected updateContentText(): void {
-    this.nativeElement.element.innerHTML = computeContentText(this._innerTextSegmentsOrder, this._innerTextSegments);
   }
 
   /**
@@ -139,23 +112,6 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     }
 
     this._bindedDOMProps[propName] = externalProperty;
-  };
-
-  public readonly addPropertyToContentText = <T = any>(
-    propName: string,
-    externalProperty: () => T
-  ): void => {
-    if (propName in this._innerTextSegments) {
-      return;
-    }
-    this._innerTextSegments[propName] = externalProperty;
-    this._innerTextSegmentsOrder.push(propName);
-  };
-
-  public readonly addTextSegmentToContentText = (
-    text: string,
-  ): void => {
-    this._innerTextSegmentsOrder.push(text);
   };
 
   public readonly addInteractionEvent = <T = any>(
@@ -224,21 +180,21 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     this.markForVerify();
   };
 
-  public addChild<E extends keyof HTMLElementTagNameMap = any>(
-    child: Component<E>
-  ): Component<E> {
+  public addChild<E extends Node>(
+    child: NodeComponent<E>
+  ): NodeComponent<E> {
     this._children.push(child);
     child._parent = this;
 
-    mount(this.nativeElement.element, child.nativeElement.element);
+    mount(this.nativeElement.element as any, child.nativeElement.element as any);
 
     return child;
   }
 
-  public removeChild<E extends keyof HTMLElementTagNameMap = any>(
-    child: Component<E>,
+  public removeChild<E extends Node = any>(
+    child: NodeComponent<E>,
     options: IComponentRemoveChildOptions = { dispose: false }
-  ): Component<E> {
+  ): NodeComponent<E> {
     const index = this._children.indexOf(child);
     if (index > -1) {
       this._children.splice(index, 1);
@@ -270,8 +226,8 @@ export default class Component<E extends keyof HTMLElementTagNameMap = any> {
     }
   }
 
-  public contains<E extends keyof HTMLElementTagNameMap = any>(
-    child: Component<E>
+  public contains<E extends Node = any>(
+    child: NodeComponent<E>
   ): boolean {
     return this._children.indexOf(child) > -1;
   }

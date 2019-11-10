@@ -1,4 +1,4 @@
-import { Component } from ".";
+import HTMLComponent from "./HTMLComponent";
 import CModule from "../module/CModule";
 import { mount } from "../utils/dom";
 import { Observable, timer } from "rxjs";
@@ -7,7 +7,7 @@ const testModule = new CModule();
 
 const INNER_TEXT = "some text";
 
-class TestComponent extends Component {
+class TestComponent extends HTMLComponent {
   public static readonly meta = {
     template: `
           <sub-component class="clicker" (click)={clickHandler}>
@@ -32,7 +32,7 @@ class TestComponent extends Component {
     return this._isTesting ? "tested-class" : "";
   }
 
-  public get children(): Array<Component<any>> {
+  public get children(): Array<HTMLComponent<any>> {
     return this._children;
   }
 
@@ -57,7 +57,7 @@ class TestComponent extends Component {
   }
 }
 
-class SubComponent extends Component {
+class SubComponent extends HTMLComponent {
   public static readonly meta = {
     template: `<span class="sub-test-class">test</span>`,
     selectorName: "sub-component",
@@ -79,7 +79,7 @@ class SubComponent extends Component {
   }
 }
 
-class TestApp extends Component {
+class TestApp extends HTMLComponent {
   public static readonly meta = {
     template: `<test-component></test-component>`,
     selectorName: "root",
@@ -125,7 +125,7 @@ describe("Component injection", () => {
     const header = TestComponent.instance.nativeElement.element.getElementsByClassName(
       "header"
     )[0];
-    expect(header.innerHTML).toEqual(INNER_TEXT);
+    expect(header.innerText).toEqual(INNER_TEXT);
   });*/
 
   it("reaction must equal 2", () => {

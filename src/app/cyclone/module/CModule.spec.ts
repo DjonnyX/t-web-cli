@@ -1,9 +1,9 @@
-import { CModule } from ".";
-import { Component } from "../display";
+import CModule from "./CModule";
+import { HTMLComponent } from "../display";
 
 const testModule = new CModule();
 
-class TestComponent extends Component {
+class TestComponent extends HTMLComponent {
   public static meta = {
     selectorName: "test-component",
     cModule: testModule

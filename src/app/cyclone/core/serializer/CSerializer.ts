@@ -1,5 +1,5 @@
 import { RuntimeErrors } from "../../runtime";
-import { Component } from "../../display";
+import { NodeComponent, HTMLComponent, BaseComponent } from "../../display";
 import { IModule } from "../../module";
 import { getCClass } from "./helpers";
 import {
@@ -18,6 +18,7 @@ import {
   PROCEDURE_SEGMENT_REGEXP
 } from "./helpers/regex";
 import { cyclone } from "..";
+import TextComponent from "../../display/TextComponent";
 
 /**
  * Serializing simple template with events, binding methods
@@ -33,7 +34,7 @@ import { cyclone } from "..";
  */
 class CSerializer {
   public static parse(
-    owner: Component<any>,
+    owner: NodeComponent<any>,
     template: string,
     cModule: IModule
   ): void {
@@ -47,14 +48,48 @@ class CSerializer {
       return;
     }
 
-    let mounter: Component<any> = owner;
+    let mounter: NodeComponent<Element> = owner;
 
     for (let i = 0, l = mSegments.length; i < l; i++) {
       const mSegment = mSegments[i];
       const mSelectorBody = mSegment.match(TAG_REGEX);
 
       if (!mSelectorBody) {
-        continue;
+        // text content
+        if (PROCEDURE_SEGMENT_REGEXP.test(mSegment)) {
+          const mSelectorText = mSegment.match(PROCEDURE_TEXT_REGEX);
+
+          for (const innerTextSegment of mSelectorText) {
+            if (PROCEDURE_SEGMENT_REGEXP.test(innerTextSegment)) {
+              const segmentPropName = innerTextSegment.replace(/[\{|\}]/gm, "");
+
+              if (!(segmentPropName in owner)) {
+                // property not found
+                throw new Error(
+                  RuntimeErrors.PROPERTY__S__IS_NOT_DEFINED_OF__O_.replace(
+                    /\$s/,
+                    segmentPropName
+                  ).replace(/\$o/, Object.getPrototypeOf(owner).name)
+                );
+              }
+
+              const prop = owner.makePropForBinding(segmentPropName);
+
+              ((mounter as unknown) as TextComponent).addPropertyToContentText(
+                segmentPropName,
+                prop
+              );
+
+              continue;
+            }
+
+            ((mounter as unknown) as TextComponent).addTextSegmentToContentText(
+              innerTextSegment
+            );
+          }
+        } else if ("textContent" in mounter.nativeElement.element && mSegment) {
+          (mounter.nativeElement.element as Element).textContent = mSegment;
+        }
       }
 
       const selectorBody = mSelectorBody[0];
@@ -72,16 +107,8 @@ class CSerializer {
         }
 
         const tName = mTagName[0];
-        const CClass = getCClass(cModule, tName);
-        let component: Component<any>;
-        if (!CClass) {
-          component = new Component({
-            elementRefType: tName as any,
-            cModule // transmit to children
-          });
-        } else {
-          component = new CClass();
-        }
+
+        const component = this.getHTMLComponent(tName, cModule);
 
         // add attrs
         const mAttributes = selectorBody.match(ATTRS_REGEX);
@@ -210,51 +237,27 @@ class CSerializer {
           }
         }
 
-        const selectorText = mSegment
-          .replace(TAG_REGEX, "")
-          .replace(/^\s+/m, "");
-
-        // inner text
-        if (PROCEDURE_SEGMENT_REGEXP.test(selectorText)) {
-          const mSelectorText = selectorText.match(PROCEDURE_TEXT_REGEX);
-
-          for (const innerTextSegment of mSelectorText) {
-            if (PROCEDURE_SEGMENT_REGEXP.test(innerTextSegment)) {
-              const segmentPropName = innerTextSegment.replace(/[\{|\}]/gm, "");
-
-              if (!(segmentPropName in owner)) {
-                // property not found
-                throw new Error(
-                  RuntimeErrors.PROPERTY__S__IS_NOT_DEFINED_OF__O_.replace(
-                    /\$s/,
-                    segmentPropName
-                  ).replace(/\$o/, Object.getPrototypeOf(owner).name)
-                );
-              }
-
-              const prop = owner.makePropForBinding(segmentPropName);
-
-              mounter.addPropertyToContentText(segmentPropName, prop);
-
-              continue;
-            }
-
-            mounter.addTextSegmentToContentText(innerTextSegment);
-          }
-        } else {
-          mounter.nativeElement.element.innerText = selectorText;
-        }
-
         // before attach
         component.beforeAttach();
 
-        mounter.addChild(component);
+        mounter.addChild(component as any);
 
         cyclone.addDeferCall(component.afterAttach);
 
-        mounter = component;
+        mounter = component as any;
       }
     }
+  }
+
+  protected static getHTMLComponent(name: string, cModule: IModule): NodeComponent<any> {
+    const CClass = getCClass(cModule, name);
+
+    return CClass
+      ? (new CClass() as any)
+      : new HTMLComponent({
+          elementRefType: name as any,
+          cModule // transmit to children
+        });
   }
 }
 

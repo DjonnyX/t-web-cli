@@ -2,7 +2,7 @@ import { Subject, Observable, Subscription } from "rxjs";
 import {
   IComponentOptions,
   IComponentDisposeOptions,
-  IComponentRemoveChildOptions,
+  IComponentRemoveChildOptions
 } from "./interfaces";
 import { IModule } from "../module";
 import { mount } from "../utils/dom";
@@ -55,14 +55,16 @@ export default class HTMLComponent<T = any> extends NodeComponent<T> {
       elementRefType = options.elementRefType;
       selectorName = options.selectorName;
       template = options.template;
-
-      addMaintainerAttributes(this, options.maintainer);
     }
 
     this.nativeElement = HTMLElementRef.new({
       elementRefType,
       selectorName
     }) as any;
+
+    if (options) {
+      addMaintainerAttributes(this, options.maintainer);
+    }
 
     if (template && options.cModule) {
       this.injectChildrenFromTemplate(template, options.cModule);
@@ -205,9 +207,7 @@ export default class HTMLComponent<T = any> extends NodeComponent<T> {
     this.markForVerify();
   };
 
-  public addChild<T = any>(
-    child: HTMLComponent<T>
-  ): HTMLComponent<T> {
+  public addChild<T = any>(child: HTMLComponent<T>): HTMLComponent<T> {
     this._children.push(child);
     child._parent = this;
 
@@ -251,9 +251,7 @@ export default class HTMLComponent<T = any> extends NodeComponent<T> {
     }
   }
 
-  public contains<T = any>(
-    child: HTMLComponent<T>
-  ): boolean {
+  public contains<T = any>(child: HTMLComponent<T>): boolean {
     return this._children.indexOf(child) > -1;
   }
 

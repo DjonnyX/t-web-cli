@@ -13,7 +13,7 @@ class TInput extends InputComponent {
         </label>
       </span>
     `,
-    host: {
+    maintainer: {
       class: "t-input"
     },
     selectorName: "t-input",

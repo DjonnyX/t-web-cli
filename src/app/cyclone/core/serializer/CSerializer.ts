@@ -1,5 +1,10 @@
 import { RuntimeErrors } from "../../runtime";
-import { NodeComponent, HTMLComponent, BaseComponent, TextComponent } from "../../display";
+import {
+  NodeComponent,
+  HTMLComponent,
+  BaseComponent,
+  TextComponent
+} from "../../display";
 import { IModule } from "../../module";
 import { getCClass } from "./helpers";
 import {
@@ -76,17 +81,12 @@ class CSerializer {
 
               const prop = owner.makePropForBinding(segmentPropName);
 
-              component.addPropertyToContentText(
-                segmentPropName,
-                prop
-              );
+              component.addPropertyToContentText(segmentPropName, prop);
 
               continue;
             }
 
-            component.addTextSegmentToContentText(
-              innerTextSegment
-            );
+            component.addTextSegmentToContentText(innerTextSegment);
           }
         } else if ("textContent" in mounter.nativeElement.element && mSegment) {
           component.data = mSegment;
@@ -173,13 +173,13 @@ class CSerializer {
 
                   const prop = owner.makePropForBinding(attrValue);
 
-                  component.bindProperty(attrName, prop);
+                  component.linkProperty(attrName, prop);
                   continue;
                 }
               }
             }
 
-            // dom properties
+            // dom properties / ref
             if (ATTR_NAME_REGEX.test(mAttr)) {
               const attrName = mAttr.match(ATTR_NAME_REGEX)[0];
 
@@ -193,13 +193,21 @@ class CSerializer {
 
               let attrValue = undefined;
 
-              // props / methods
+              // props
               if (PROCEDURE_ATTR_REGEX.test(mAttrValue[0])) {
                 const mAttrProcedureValue = mAttr.match(PROCEDURE_ATTR_REGEX);
                 if (mAttrProcedureValue && mAttrProcedureValue.length > 0) {
                   // procedure | prop
                   attrValue = mAttrProcedureValue[0].replace(/{|}/gm, "");
 
+                  if (/__elRef__/.test(attrName)) {
+                    const prop = owner.makePropForBinding(attrValue);
+
+                    // if elRef is deleted, then it generates a supposed event that says that
+                    // it is necessary to clear elRef in the maintainer.
+                    component.linkElRefs(attrName, prop);
+                    continue;
+                  }
                   if (
                     !(
                       attrName in
@@ -217,7 +225,7 @@ class CSerializer {
 
                   const prop = owner.makePropForBinding(attrValue);
 
-                  component.bindDomProperty(attrName, prop);
+                  component.linkDomProperty(attrName, prop);
                   continue;
                 }
               }
@@ -247,7 +255,10 @@ class CSerializer {
     }
   }
 
-  protected static getHTMLComponent(name: string, cModule: IModule): NodeComponent<any> {
+  protected static getHTMLComponent(
+    name: string,
+    cModule: IModule
+  ): NodeComponent<any> {
     const CClass = getCClass(cModule, name);
 
     return CClass
@@ -258,8 +269,10 @@ class CSerializer {
         });
   }
 
-  protected static attach(mounter: NodeComponent<Node>, component: BaseComponent): void {
-    
+  protected static attach(
+    mounter: NodeComponent<Node>,
+    component: BaseComponent
+  ): void {
     component.beforeAttach();
 
     mounter.addChild(component as any);

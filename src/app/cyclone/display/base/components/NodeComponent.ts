@@ -9,6 +9,7 @@ import { mount } from "../../../utils/dom";
 import { RuntimeErrors } from "../../../runtime";
 import { cyclone, CSerializer } from "../../../core";
 import BaseComponent from "./BaseComponent";
+import { linkExternalProperty, unlinkExternalProperty } from "./helpers";
 
 /**
  * Basic html-component
@@ -23,7 +24,7 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
 
   protected _children = new Array<NodeComponent<any>>();
 
-  protected _events: {
+  protected _linkedEvents: {
     [eventType: string]: {
       emitter: Subject<any> | undefined;
       executor: (e: Event) => void;
@@ -34,12 +35,16 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
     [propName: string]: () => any;
   } = {};
 
-  protected _bindedProps: {
+  protected _linkedProps: {
     [propName: string]: () => any;
   } = {};
 
-  protected _bindedDOMProps: {
+  protected _linkedDOMProps: {
     [propName: string]: () => any;
+  } = {};
+
+  protected _linkedElRefs: {
+    [name: string]: () => any;
   } = {};
 
   protected _interactionSubscriptions = Array<Subscription>();
@@ -52,24 +57,27 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
   }
 
   protected _detectChanges = (): void => {
+    // NEED PROTECT CALLS IF COMPONENT IS DISPOSED
+    // ? MAY BE NEED RECURSIVE | NEED A PROPS TREE ?
+    // each propery setter must include caller <code>markForVerify</code>
     this.updateBindedProps();
     this.updateDOMBindedProps();
   };
 
   protected updateBindedProps(): void {
-    const propNames = Object.keys(this._bindedProps);
+    const propNames = Object.keys(this._linkedProps);
 
     for (const propName of propNames) {
-      const extProp = this._bindedProps[propName];
+      const extProp = this._linkedProps[propName];
       (this as Record<string, any>)[propName] = extProp();
     }
   }
 
   protected updateDOMBindedProps(): void {
-    const propNames = Object.keys(this._bindedDOMProps);
+    const propNames = Object.keys(this._linkedDOMProps);
 
     for (const propName of propNames) {
-      const extProp = this._bindedDOMProps[propName];
+      const extProp = this._linkedDOMProps[propName];
       (this.nativeElement.element as any)[propName] = extProp();
     }
   }
@@ -88,30 +96,25 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
     return this._propsForBinding[propName];
   };
 
-  public readonly bindProperty = <T = any>(
+  public readonly linkProperty = <T = any>(
     propName: string,
     externalProperty: () => T
   ): void => {
-    if (propName in this._bindedProps) {
-      throw new Error(
-        RuntimeErrors.PROPERTY__P__ALREADY_BINDED.replace(/\$p/, propName)
-      );
-    }
-
-    this._bindedProps[propName] = externalProperty;
+    linkExternalProperty(this._linkedProps, propName, externalProperty);
   };
 
-  public readonly bindDomProperty = <T = any>(
+  public readonly linkDomProperty = <T = any>(
     propName: string,
     externalProperty: () => T
   ): void => {
-    if (propName in this._bindedDOMProps) {
-      throw new Error(
-        RuntimeErrors.PROPERTY__P__ALREADY_BINDED.replace(/\$p/, propName)
-      );
-    }
+    linkExternalProperty(this._linkedDOMProps, propName, externalProperty);
+  };
 
-    this._bindedDOMProps[propName] = externalProperty;
+  public readonly linkElRefs = <T = any>(
+    propName: string,
+    externalProperty: () => T
+  ): void => {
+    linkExternalProperty(this._linkedElRefs, propName, externalProperty);
   };
 
   public readonly addInteractionEvent = <T = any>(
@@ -121,11 +124,11 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
       throw new Error(RuntimeErrors.EVENT_TYPE_MUST_BE_DEFINED);
     }
 
-    if (!(eventName in this._events)) {
+    if (!(eventName in this._linkedEvents)) {
       // dom events
       if (eventName in this) {
         const executor = (this as Record<string, any>)[eventName];
-        this._events[eventName] = { emitter: new Subject<T>(), executor };
+        this._linkedEvents[eventName] = { emitter: new Subject<T>(), executor };
       }
       // self events
       else {
@@ -135,23 +138,23 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
         this.nativeElement.addListener(eventName, e => {
           executor(e);
         });
-        this._events[eventName] = {
+        this._linkedEvents[eventName] = {
           emitter: new Subject<T>(),
           executor
         };
       }
     }
 
-    return this._events[eventName].emitter.asObservable();
+    return this._linkedEvents[eventName].emitter.asObservable();
   };
 
   protected _extractEmitter<T = any>(
     eventName: string
   ): Subject<T> | undefined {
-    if (!(eventName in this._events)) {
+    if (!(eventName in this._linkedEvents)) {
       return undefined;
     }
-    return this._events[eventName].emitter;
+    return this._linkedEvents[eventName].emitter;
   }
 
   /**
@@ -264,7 +267,7 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
    * Removing all interactive eventEmitter's
    */
   protected removeInteractionEvents(): void {
-    const eventTypes = Object.keys(this._events);
+    const eventTypes = Object.keys(this._linkedEvents);
 
     for (const eventType of eventTypes) {
       const emitter = this._extractEmitter(eventType);
@@ -275,9 +278,9 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
 
       emitter.complete();
 
-      this._events[eventType].executor = undefined;
-      this._events[eventType].emitter = undefined;
-      delete this._events[eventType];
+      this._linkedEvents[eventType].executor = undefined;
+      this._linkedEvents[eventType].emitter = undefined;
+      delete this._linkedEvents[eventType];
     }
   }
 
@@ -288,9 +291,16 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
     }
   }
 
+  protected removeLinkedProps(): void {
+    unlinkExternalProperty(this._linkedDOMProps);
+    unlinkExternalProperty(this._linkedProps);
+    unlinkExternalProperty(this._linkedElRefs);
+  }
+
   public dispose(
     options: IComponentDisposeOptions = { disposeChildren: true }
   ): void {
+    this.removeLinkedProps();
     this.removeChildren({ dispose: options.disposeChildren });
     this.removeInteractionHandlers();
     this.removeInteractionEvents();

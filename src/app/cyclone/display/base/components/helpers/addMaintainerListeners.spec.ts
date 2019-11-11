@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {HTMLComponent} from "../../..";
+import { HTMLComponent } from "../../..";
 import { IComponentOptions } from "../../../interfaces";
 import { CModule } from "../../../../module";
 import { mount } from "../../../../utils/dom";
@@ -10,8 +10,10 @@ class TestComponent extends HTMLComponent<HTMLButtonElement> {
   public static readonly meta: IComponentOptions = {
     elementRefType: "button",
     cModule: testModule,
-    listeners: {
+    maintainer: {
+      listeners: {
         click: "clickHandler"
+      }
     }
   };
 
@@ -19,7 +21,7 @@ class TestComponent extends HTMLComponent<HTMLButtonElement> {
 
   private _reactions = 0;
   public get reactions(): number {
-      return this._reactions;
+    return this._reactions;
   }
 
   constructor() {
@@ -29,7 +31,7 @@ class TestComponent extends HTMLComponent<HTMLButtonElement> {
   }
 
   public clickHandler(e: any): void {
-    this._reactions ++;
+    this._reactions++;
   }
 }
 
@@ -38,7 +40,6 @@ testModule.components = {
 };
 
 describe("addMaintainerListeners", () => {
-
   it("reactions to event must be greater than 0", () => {
     const component = new TestComponent();
     mount(window.document.body, component.nativeElement.element);

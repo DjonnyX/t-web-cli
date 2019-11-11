@@ -1,7 +1,9 @@
 @import "../styles/input";
 @import "../styles/utils";
 
-$animation: 0.4s cubic-bezier(0.5, 0, 0.5, 1);
+$ease: cubic-bezier(0.5, 0, 0.5, 1);
+$animation-placeholder: 0.4s $ease;
+$animation-border: 0.2s $ease;
 
 $t-input-margin-lrb-inactive: 1em / 16em;
 $t-input-margin-lrb-focus: 0em;
@@ -63,7 +65,8 @@ $t-padding-top: $t-input-height * 0.5;
     color: $input-color-focus;
     position: absolute;
     left: 0;
-    transition: transform $animation, background-color $animation;
+    transition: transform $animation-placeholder,
+      background-color $animation-placeholder;
     transform: translateY($t-placeholder-y);
     transform-origin: 0 0;
     padding: 0 $t-placeholder-padding-h;
@@ -86,6 +89,7 @@ $t-padding-top: $t-input-height * 0.5;
     label {
       border-width: 2px;
       border-color: $input-color-focus;
+      transition: border-color $animation-border;
     }
   }
 

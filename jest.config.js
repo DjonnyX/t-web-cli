@@ -10,7 +10,7 @@ module.exports = {
       "<rootDir>/__mocks__/fileMock.js",
     "\\.(css|scss)$": "identity-obj-proxy"
   },
-  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
+  testPathIgnorePatterns: ["/node_modules/", "/dist/", "__design-src__"],
   setupFilesAfterEnv: ["@testing-library/jest-dom/extend-expect"],
   collectCoverageFrom: ["**/*.{js,ts}", "!**/node_modules/**"]
 };

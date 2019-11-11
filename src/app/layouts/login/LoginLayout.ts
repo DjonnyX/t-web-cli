@@ -10,10 +10,10 @@ import loginLayoutModule from "./LoginLayout.module";
 export default class LoginLayout extends HTMLComponent {
   public static readonly meta: IComponentOptions = {
     template: `<div className="t-wrapper">
+      <div className="t-logo"></div>
       <div className="t-login__t-description">
-        <div className="t-description__logo"></div>
         <h1 className="t-description__title">Sign in to Telegram</h1>
-        <div className="t-description__text">Please confirm your country and enter your phone number.</div>
+        <p className="t-description__text">Please confirm your country and enter your phone number.</p>
       </div>
       <form>
         <t-input (changeValue)={inputChange} [placeholder]="Phone number"></t-input>

@@ -1,15 +1,24 @@
+$logo-size: 10em;
+
 .t-login {
   position: absolute;
   width: 100%;
   min-height: 100vh;
 
   .t-login-wrapper {
-      
+  }
+
+  .t-logo {
+    background-image: url(../../../assets/t-logo.svg);
+    width: $logo-size;
+    height: $logo-size;
+    background-size: contain;
+    margin: auto;
   }
 
   .t-login__t-description {
-    .t-description__logo {
-    }
+    text-align: center;
+
     .t-description__title {
     }
     .t-description__text {

@@ -8,7 +8,7 @@ $t-placeholder-line-height: 1em;
 $t-placeholder-padding-h: 0.5em;
 $t-placeholder-height-focus: $t-placeholder-line-height * $t-placeholder-focus-scale;
 // normal
-$t-placeholder-y: ($t-input-height - $padding - $t-placeholder-line-height) * 0.5;
+$t-placeholder-y: ($t-input-height - $padding) * 0.5 - $t-placeholder-line-height;
 // focused
 $t-placeholder-focus-y: -($t-input-height - $padding);
 

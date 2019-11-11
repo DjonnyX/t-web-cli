@@ -7,14 +7,18 @@ import tInputModule from "./TInput.module";
 class TInput extends InputComponent {
   public static readonly meta: IComponentOptions = {
     template: `
-      <input id={id} (change)={inputChange} value={value} (focus)={focusHandler} (blur)={blurHandler}></input>
+      <input id={id} (change)={inputChange} value={value}></input>
         <label className={lClass} htmlFor={id}>
           <span>{placeholder}</span>
         </label>
       </span>
     `,
     maintainer: {
-      class: "t-input"
+      class: "t-input",
+      listeners: {
+        focus: "focusHandler",
+        blur: "blurHandler"
+      }
     },
     selectorName: "t-input",
     cModule: tInputModule
@@ -26,7 +30,7 @@ class TInput extends InputComponent {
   }
 
   public get lClass(): string {
-    return `t-placeholder${this.focused ? " focus": ""}`;
+    return `t-placeholder${this.focused ? " focus" : ""}`;
   }
 
   private _value = "";
@@ -95,11 +99,10 @@ class TInput extends InputComponent {
    */
   public changeValue(e: any): void {
     this.emitEvent("changeValue", e.target.value);
-    console.log(e.target.value);
   }
 }
 
 tInputModule.components = {
-    TInput
-}
+  TInput
+};
 export default TInput;

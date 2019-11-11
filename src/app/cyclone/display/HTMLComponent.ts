@@ -9,6 +9,7 @@ import { mount } from "../utils/dom";
 import { RuntimeErrors } from "../runtime";
 import { cyclone, CSerializer } from "../core";
 import { HTMLElementRef, NodeComponent, addMaintainerAttributes } from "./base";
+import { addMaintainerListeners } from "./base/components/helpers";
 
 /**
  * Basic html-component
@@ -61,6 +62,10 @@ export default class HTMLComponent<T = any> extends NodeComponent<T> {
       elementRefType,
       selectorName
     }) as any;
+
+    if (options && options.listeners) {
+      addMaintainerListeners(this, options.listeners);
+    }
 
     if (options) {
       addMaintainerAttributes(this, options.maintainer);

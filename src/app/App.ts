@@ -50,12 +50,10 @@ export default class App extends HTMLComponent {
   }
 
   public clickHandler(): void {
-    console.log("click");
     this.value = "click";
   }
 
   public inputChange(value: string): void {
-    console.log("input v", value);
     this.value = value;
   }
 }

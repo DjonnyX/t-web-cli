@@ -2,22 +2,23 @@
 
 import "./TInput.style.scss";
 import { InputComponent, IComponentOptions } from "../../cyclone/display";
+import { addClass, removeClass } from "../../cyclone/utils/dom";
 import tInputModule from "./TInput.module";
 
 class TInput extends InputComponent {
   public static readonly meta: IComponentOptions = {
     template: `
-      <input __elRef__={inputRef} id={id} (change)={inputChange} value={value} (focus)={focusHandler} (blur)={blurHandler}></input>
-        <label className={lClass} htmlFor={id}>
-          <span>{placeholder}</span>
-        </label>
-      </span>
+        <input id={id} (change)={inputChange} value={value} (focus)={focusHandler} (blur)={blurHandler}></input>
+        <span className={lClass}>{placeholder}
+          <div></div>
+        </span>
+        <label htmlFor={id}></label>
     `,
     maintainer: {
       class: "t-input",
       listeners: {
         click: "maintainerClickHandler"
-      }
+      },
     },
     selectorName: "t-input",
     cModule: tInputModule
@@ -29,13 +30,13 @@ class TInput extends InputComponent {
   }
 
   public get lClass(): string {
-    return `t-placeholder${this.focused ? " focus" : ""}`;
+    return `t-input__placeholder${this._focused ? " focus" : ""}${!Boolean(this._value) ? " empty" : " full"}`;
   }
 
   private _value = "";
   public set value(v: string) {
     if (this._value !== v) {
-      this._value = v;
+      this._value = v || "";
 
       this.markForVerify();
     }
@@ -49,6 +50,8 @@ class TInput extends InputComponent {
   public set focused(v: boolean) {
     if (this._focused !== v) {
       this._focused = v;
+
+      this.updateClassForMaintainer();
 
       this.markForVerify();
     }
@@ -77,11 +80,18 @@ class TInput extends InputComponent {
     this._id = `${TInput.meta.selectorName}-${InputComponent.count}`;
   }
 
-  public focusHandler(e: any): void {
+  /**
+   * Focus to input
+   */
+  public focus(): void {
+    this.nativeElement.element.focus();
+  }
+
+  public focusHandler(e: Event): void {
     this.focused = true;
   }
 
-  public blurHandler(e: any): void {
+  public blurHandler(e: Event): void {
     this.focused = false;
   }
 
@@ -101,11 +111,19 @@ class TInput extends InputComponent {
   }
 
   /**
-   * click on maintainer
+   * click on the maintainer
    * @param {any} e
    */
-  public maintainerClickHandler(e: any): void {
-    this.emitEvent("changeValue", e.target.value);
+  public maintainerClickHandler(e: Event): void {
+    this.focus();
+  }
+
+  protected updateClassForMaintainer(): void {
+    if (this._focused) {
+      addClass(this.nativeElement.element, "focus");
+    } else {
+      removeClass(this.nativeElement.element, "focus");
+    }
   }
 }
 

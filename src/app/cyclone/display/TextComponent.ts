@@ -1,15 +1,14 @@
 import { cyclone } from "../core";
-import { computeContentText } from "./base/helpers/ComponentHelpers";
-import BaseComponent from "./base/components/BaseComponent";
-import { TextElementRef } from "./base";
+import { TextElementRef, BaseComponent, computeContentText } from "./base";
 
 const TEXT_ELREF_TYPE = "__text-node__"; // necessary to determine
 
 /**
  * Basic component
  */
-export default class TextComponent<E extends Text = any> extends BaseComponent<E> {
-
+export default class TextComponent<E extends Text = any> extends BaseComponent<
+  E
+> {
   public get data(): string {
     return (this.nativeElement.element as Text).data;
   }
@@ -29,7 +28,7 @@ export default class TextComponent<E extends Text = any> extends BaseComponent<E
 
   constructor() {
     super();
-  
+
     const elementRefType = TEXT_ELREF_TYPE;
 
     this.nativeElement = TextElementRef.new({
@@ -46,7 +45,10 @@ export default class TextComponent<E extends Text = any> extends BaseComponent<E
   };
 
   protected updateContentText(): void {
-    const textContent = computeContentText(this._innerTextSegmentsOrder, this._innerTextSegments);
+    const textContent = computeContentText(
+      this._innerTextSegmentsOrder,
+      this._innerTextSegments
+    );
     if (textContent && textContent !== this.nativeElement.element.textContent) {
       this.nativeElement.element.textContent = textContent;
     }
@@ -77,13 +79,11 @@ export default class TextComponent<E extends Text = any> extends BaseComponent<E
     this._innerTextSegmentsOrder.push(propName);
   };
 
-  public readonly addTextSegmentToContentText = (
-    text: string,
-  ): void => {
+  public readonly addTextSegmentToContentText = (text: string): void => {
     this._innerTextSegmentsOrder.push(text);
   };
 
   public dispose(): void {
-      // etc
+    // etc
   }
 }

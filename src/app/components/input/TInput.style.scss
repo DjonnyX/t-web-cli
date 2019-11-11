@@ -59,6 +59,7 @@ $t-padding-top: $t-input-height * 0.5;
   }
 
   .t-input__placeholder {
+    pointer-events: none;
     color: $input-color-focus;
     position: absolute;
     left: 0;

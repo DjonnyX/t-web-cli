@@ -1,27 +1,33 @@
+
+import "./LoginLayout.style.scss";
 import { HTMLComponent, IComponentOptions } from "../../cyclone/display";
 import { tInputModule } from "../../components";
-import loginLayoutModule from "./Login.module";
+import loginLayoutModule from "./LoginLayout.module";
 
 /**
  * @author Eugene Grebennikov (djonnyx@gmail.com)
  */
 export default class LoginLayout extends HTMLComponent {
   public static readonly meta: IComponentOptions = {
-    template: `<div className="login-wrapper">
-    <div></div>
-      <h1>Sign in to Telegram</h1>
-      <div>Please confirm your country and enter your phone number.</div>
+    template: `<div className="t-wrapper">
+      <div className="t-login__t-description">
+        <div className="t-description__logo"></div>
+        <h1 className="t-description__title">Sign in to Telegram</h1>
+        <div className="t-description__text">Please confirm your country and enter your phone number.</div>
+      </div>
       <form>
-        <t-input (changeValue)={inputChange} [value]={value} [placeholder]={placeholder}></t-input>
-        <t-input (changeValue)={inputChange} [value]={value} [placeholder]={placeholder}></t-input>
+        <t-input (changeValue)={inputChange}></t-input>
         <button (click)={clickHandler}>Next</button>
       </form>
     </div>`,
-    selectorName: "login",
+    selectorName: "t-login",
+    maintainer: {
+      class: "t-login"
+    },
     cModule: loginLayoutModule
   };
 
-  private _value = "my value";
+  private _value = "";
   public set value(v: string) {
     if (this._value !== v) {
       this._value = v;

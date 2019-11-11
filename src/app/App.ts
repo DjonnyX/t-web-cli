@@ -8,7 +8,7 @@ import rootModule from "./root-module";
  */
 export default class App extends HTMLComponent {
   public static readonly meta: IComponentOptions = {
-    template: `<login></login>`,
+    template: `<t-login></t-login>`,
     selectorName: "root",
     cModule: rootModule
   };

@@ -21,7 +21,9 @@ import {
   PROCEDURE_TEXT_REGEX,
   ATTR_NAME_COMP_REGEXP,
   PROCEDURE_SEGMENT_REGEXP,
-  NODE_TEXT_WHITESPACE
+  NODE_TEXT_WHITESPACE,
+  PLAIN_ATTR_REGEX,
+  COMP_SIMPLE_PROP_REGEX
 } from "./helpers/regex";
 import { cyclone } from "..";
 
@@ -38,6 +40,13 @@ import { cyclone } from "..";
  * some {textValue} for {ownerValue} - text with properties binding
  */
 class CSerializer {
+
+  /**
+   * Parse template
+   * @param {NodeComponent<any>} owner 
+   * @param {string} template 
+   * @param {IModule} cModule 
+   */
   public static parse(
     owner: NodeComponent<any>,
     template: string,
@@ -123,6 +132,10 @@ class CSerializer {
         const mAttributes = selectorBody.match(ATTRS_REGEX);
         if (mAttributes) {
           for (let j = 0, l1 = mAttributes.length; j < l1; j++) {
+            
+        if (/(Phone number)/.test(mSegment)) {
+          console.log('Phone number')
+        }
             const mAttr = mAttributes[j];
 
             // events
@@ -158,10 +171,11 @@ class CSerializer {
               const mAttrValue = mAttr.match(PROCEDURE_ATTR_REGEX);
 
               if (!(mAttrValue && mAttrValue.length)) {
+                this.updateComponentProperyValue(component, attrName, mAttr);
                 continue;
               }
 
-              if (PROCEDURE_ATTR_REGEX.test(mAttrValue[0])) {
+              if (PROCEDURE_ATTR_REGEX.test(mAttrValue[0]) && !PLAIN_ATTR_REGEX.test(mAttrValue[0])) {
                 const mAttrProcedureValue = mAttr.match(PROCEDURE_ATTR_REGEX);
                 if (mAttrProcedureValue && mAttrProcedureValue.length > 0) {
                   // procedure | prop
@@ -185,7 +199,7 @@ class CSerializer {
               }
               // static
               else if (attrName in (component as Record<string, any>)) {
-                (component as Record<string, any>)[attrName] = mAttrValue[0];
+                this.updateComponentProperyValue(component, name, mAttr);
               }
             }
 
@@ -265,6 +279,11 @@ class CSerializer {
     }
   }
 
+  /**
+   * Get HTMLComponent from class meta property
+   * @param {string} name 
+   * @param {IModule} cModule 
+   */
   protected static getHTMLComponent(
     name: string,
     cModule: IModule
@@ -279,6 +298,11 @@ class CSerializer {
         });
   }
 
+  /**
+   * Attach node to owner
+   * @param {NodeComponent<Node>} mounter 
+   * @param {BaseComponent} component 
+   */
   protected static attach(
     mounter: NodeComponent<Node>,
     component: BaseComponent
@@ -288,6 +312,26 @@ class CSerializer {
     mounter.addChild(component as any);
 
     cyclone.addDeferCall(component.afterAttach);
+  }
+
+  /**
+   * Setup plain text
+   * @param {BaseComponent} component 
+   * @param {string} name 
+   * @param {string} attrPair 
+   */
+  protected static updateComponentProperyValue(component: BaseComponent, name: string, attrPair: string): void {
+    const mAttr = attrPair.match(COMP_SIMPLE_PROP_REGEX);
+
+    if (!(mAttr && mAttr.length)) {
+      return;
+    }
+
+    const value = mAttr[0].replace(/'|"/gm, "");
+
+    if (name in (component as Record<string, any>)) {
+      (component as Record<string, any>)[name] = value;
+    }
   }
 }
 

@@ -39,16 +39,16 @@ export default class LoginLayout extends HTMLComponent {
     return this._value;
   }
 
-  private _placeholder = "my placeholder";
-  public set placeholder(v: string) {
-    if (this._placeholder !== v) {
-      this._placeholder = v;
+  private _phoneNumberPlaceholder = "my placeholder";
+  public set phoneNumberPlaceholder(v: string) {
+    if (this._phoneNumberPlaceholder !== v) {
+      this._phoneNumberPlaceholder = v;
 
       this.markForVerify();
     }
   }
-  public get placeholder(): string {
-    return this._placeholder;
+  public get phoneNumberPlaceholder(): string {
+    return this._phoneNumberPlaceholder;
   }
 
   constructor() {

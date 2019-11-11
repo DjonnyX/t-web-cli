@@ -34,8 +34,8 @@ export default class HTMLComponent<T = any> extends NodeComponent<T> {
       selectorName
     }) as any;
 
-    if (options && options.listeners) {
-      addMaintainerListeners(this, options.listeners);
+    if (options && options.maintainer && options.maintainer.listeners) {
+      addMaintainerListeners(this, options.maintainer.listeners);
     }
 
     if (options) {

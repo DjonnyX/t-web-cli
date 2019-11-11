@@ -16,7 +16,7 @@ class TInput extends InputComponent {
     maintainer: {
       class: "t-input",
       listeners: {
-        click: "clickHandler"
+        click: "maintainerClickHandler"
       }
     },
     selectorName: "t-input",

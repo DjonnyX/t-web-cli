@@ -79,7 +79,11 @@ export default class HTMLComponent<T = any> extends NodeComponent<T> {
   }
 
   protected _detectChanges = (): void => {
+    // NEED PROTECT CALLS IF COMPONENT IS DISPOSED
+    // ? MAY BE NEED RECURSIVE | NEED A PROPS TREE ?
+    // each propery setter must include caller <code>markForVerify</code>
     this.updateBindedProps();
+
     this.updateDOMBindedProps();
   };
 

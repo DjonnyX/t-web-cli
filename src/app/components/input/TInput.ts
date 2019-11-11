@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import "./TInput.style.scss";
 import { InputComponent, IComponentOptions } from "../../cyclone/display";
@@ -6,9 +7,8 @@ import tInputModule from "./TInput.module";
 class TInput extends InputComponent {
   public static readonly meta: IComponentOptions = {
     template: `
-      <input id={id} (change)={inputChange} value={value}></input>
-      <span>
-        <label htmlFor={id}>
+      <input id={id} (change)={inputChange} value={value} (focus)={focusHandler} (blur)={blurHandler}></input>
+        <label className={lClass} htmlFor={id}>
           <span>{placeholder}</span>
         </label>
       </span>
@@ -25,6 +25,10 @@ class TInput extends InputComponent {
     return this._id;
   }
 
+  public get lClass(): string {
+    return `t-placeholder${this.focused ? " focus": ""}`;
+  }
+
   private _value = "";
   public set value(v: string) {
     if (this._value !== v) {
@@ -36,6 +40,19 @@ class TInput extends InputComponent {
 
   public get value(): string {
     return this._value;
+  }
+
+  private _focused = false;
+  public set focused(v: boolean) {
+    if (this._focused !== v) {
+      this._focused = v;
+
+      this.markForVerify();
+    }
+  }
+
+  public get focused(): boolean {
+    return this._focused;
   }
 
   private _placeholder = "";
@@ -55,6 +72,14 @@ class TInput extends InputComponent {
     super(TInput.meta);
 
     this._id = `${TInput.meta.selectorName}-${InputComponent.count}`;
+  }
+
+  public focusHandler(e: any): void {
+    this.focused = true;
+  }
+
+  public blurHandler(e: any): void {
+    this.focused = false;
   }
 
   /**

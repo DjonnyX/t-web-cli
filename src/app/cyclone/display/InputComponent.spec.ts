@@ -1,4 +1,4 @@
-import { InputComponent } from ".";
+import { InputComponent } from "./";
 
 describe("InputComponent", () => {
   for (let i = 0; i < 10; i++) {

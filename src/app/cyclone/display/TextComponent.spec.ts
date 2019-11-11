@@ -42,6 +42,7 @@ const isCleared = (components: TestComponent[]): boolean => {
 describe("TextComponent", () => {
     const testComponent = new TestComponent();
 
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     const prop = () => {
         return "foo";
     };

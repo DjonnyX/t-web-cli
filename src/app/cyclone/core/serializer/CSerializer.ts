@@ -20,7 +20,8 @@ import {
   ATTR_NAME_EVENT_REGEXP,
   PROCEDURE_TEXT_REGEX,
   ATTR_NAME_COMP_REGEXP,
-  PROCEDURE_SEGMENT_REGEXP
+  PROCEDURE_SEGMENT_REGEXP,
+  NODE_TEXT_WHITESPACE
 } from "./helpers/regex";
 import { cyclone } from "..";
 
@@ -58,7 +59,12 @@ class CSerializer {
       const mSegment = mSegments[i];
       const mSelectorBody = mSegment.match(TAG_REGEX);
 
+      const mSegmentNormalized = mSegment.replace(NODE_TEXT_WHITESPACE, "");
       if (!mSelectorBody) {
+        if (!Boolean(mSegmentNormalized)) {
+          continue;
+        }
+
         // text content
         const component = new TextComponent();
 
@@ -176,6 +182,10 @@ class CSerializer {
                   component.linkProperty(attrName, prop);
                   continue;
                 }
+              }
+              // static
+              else if (attrName in (component as Record<string, any>)) {
+                (component as Record<string, any>)[attrName] = mAttrValue[0];
               }
             }
 

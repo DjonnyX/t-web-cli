@@ -12,3 +12,4 @@ export const ATTR_NAME_EVENT_REGEXP = /(\(.*?\))/m;
 export const PROCEDURE_ATTR_REGEX = /({+.*?}+)/gm;
 export const PROCEDURE_TEXT_REGEX = /({.*?})|[^({.*?})]+/gm;
 export const PROCEDURE_SEGMENT_REGEXP = /({.*?})/m;
+export const NODE_TEXT_WHITESPACE = /({.*?}|[^({.*?})])(^\s+)/gm;

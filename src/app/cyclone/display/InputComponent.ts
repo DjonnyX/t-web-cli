@@ -11,7 +11,7 @@ export default class InputComponent extends HTMLComponent<HTMLInputElement> {
   private static _count = 0;
 
   public static meta: IComponentOptions = {
-    elementRefType: "input"
+    elementRefType: "input",
   };
 
   constructor(options: IComponentOptions = InputComponent.meta) {

@@ -16,7 +16,7 @@ export default class LoginLayout extends HTMLComponent {
         <div className="t-description__text">Please confirm your country and enter your phone number.</div>
       </div>
       <form>
-        <t-input (changeValue)={inputChange}></t-input>
+        <t-input (changeValue)={inputChange} [placeholder]="Phone number"></t-input>
         <button (click)={clickHandler}>Next</button>
       </form>
     </div>`,

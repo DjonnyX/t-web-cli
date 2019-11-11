@@ -1,7 +1,5 @@
-import { Subscription } from "rxjs";
 import {
   IComponentOptions,
-  IComponentDisposeOptions,
 } from "./interfaces";
 import { HTMLElementRef, NodeComponent, addMaintainerAttributes } from "./base";
 import { addMaintainerListeners } from "./base/components/helpers";
@@ -11,8 +9,6 @@ import { addMaintainerListeners } from "./base/components/helpers";
  */
 export default class HTMLComponent<T = any> extends NodeComponent<T> {
   public static meta: IComponentOptions;
-
-  protected _interactionSubscriptions = Array<Subscription>();
 
   constructor(options: IComponentOptions = HTMLComponent.meta) {
     super();
@@ -45,13 +41,5 @@ export default class HTMLComponent<T = any> extends NodeComponent<T> {
     if (template && options.cModule) {
       this.injectChildrenFromTemplate(template, options.cModule);
     }
-  }
-
-  public dispose(
-    options: IComponentDisposeOptions = { disposeChildren: true }
-  ): void {
-    this.removeChildren({ dispose: options.disposeChildren });
-    this.removeInteractionHandlers();
-    this.removeInteractionEvents();
   }
 }

@@ -1,4 +1,5 @@
 import { Subject, Observable, Subscription } from "rxjs";
+import { filter } from "rxjs/operators";
 import {
   IComponentOptions,
   IComponentDisposeOptions,
@@ -10,6 +11,9 @@ import { RuntimeErrors } from "../../../runtime";
 import { cyclone, CSerializer } from "../../../core";
 import BaseComponent from "./BaseComponent";
 import { linkExternalProperty, unlinkExternalProperty } from "./helpers";
+import IComponentEvent from "./interfaces/IComponentEvent";
+
+const SELF_EVENTS = /(\_\_.*?\_\_)/;
 
 /**
  * Basic html-component
@@ -51,6 +55,10 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
       child.markForVerify();
     }
   }
+
+  protected _events = new Subject<IComponentEvent>();
+
+  protected _evtSubscriptions = new Array<Subscription>();
 
   constructor() {
     super();
@@ -125,16 +133,25 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
       }
       // self events
       else {
-        const executor = (e: Event): void => {
+        const executor = (e: Event | IComponentEvent): void => {
           this.emitEvent(eventName, e);
         };
-        this.nativeElement.addListener(eventName, e => {
-          executor(e);
-        });
-        this._linkedEvents[eventName] = {
-          emitter: new Subject<T>(),
-          executor
-        };
+
+        if (SELF_EVENTS.test(eventName)) {
+          this._events.pipe(
+            filter<IComponentEvent>(v => v.type === eventName)
+          ).subscribe(e => {
+            executor(e);
+          })
+        } else {
+          this.nativeElement.addListener(eventName, e => {
+            executor(e);
+          });
+          this._linkedEvents[eventName] = {
+            emitter: new Subject<T>(),
+            executor
+          };
+        }
       }
     }
 
@@ -185,7 +202,7 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
       child.nativeElement.element as any
     );
   
-    this.emitEvent("viewChild", this);
+    this.emitEvent("__viewChild__", this);
 
     return child;
   }
@@ -207,7 +224,7 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
         });
       }
 
-      this.emitEvent("viewChild", null);
+      this.emitEvent("__viewChild__", null);
     }
 
     return child;
@@ -286,9 +303,18 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
     unlinkExternalProperty(this._linkedProps);
   }
 
+  protected removeSelfEvents(): void {
+    this._events.complete();
+    while (this._evtSubscriptions.length) {
+      const subscr = this._evtSubscriptions.shift();
+      subscr.unsubscribe();
+    }
+  }
+
   public dispose(
     options: IComponentDisposeOptions = { disposeChildren: true }
   ): void {
+    this.removeSelfEvents();
     this.removeLinkedProps();
     this.removeChildren({ dispose: options.disposeChildren });
     this.removeInteractionHandlers();

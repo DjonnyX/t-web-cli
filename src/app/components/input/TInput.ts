@@ -32,28 +32,12 @@ class TInput extends InputComponent {
   }
 
   private _inputComponent: InputComponent;
-  public setInputComponent(v: InputComponent) {
-    if (this._inputComponent !== v) {
-      this._inputComponent = v;
-
-
-      this.markForVerify();
-    }
-  }
 
   public get inputComponent(): InputComponent {
     return this._inputComponent;
   }
 
   private _caretComponent: HTMLComponent;
-  public setCaretComponent(v: HTMLComponent) {
-    if (this._caretComponent !== v) {
-      this._caretComponent = v;
-
-
-      this.markForVerify();
-    }
-  }
 
   public get caretComponent(): HTMLComponent {
     return this._caretComponent;
@@ -63,9 +47,9 @@ class TInput extends InputComponent {
   public set value(v: string) {
     if (this._value !== v) {
       this._value = v || "";
-
-      this.setCaretTo(this._value, this._value.length);
-
+  
+      this.updateCaretPos();
+  
       this.markForVerify();
     }
   }
@@ -138,12 +122,8 @@ class TInput extends InputComponent {
   
     this.updateValue(target.value, target.selectionEnd);
 
-    //this.input(e);
-    //this.change(e);
-
-    
-    this.emitEvent("input", target.value);
-    this.emitEvent("change", target.value);
+    this.input(target.value);
+    this.change(target.value);
   }
 
   /**
@@ -155,9 +135,7 @@ class TInput extends InputComponent {
   
     this.updateValue(target.value, target.selectionEnd);
   
-    //this.input(e);
-    
-    this.emitEvent("input", target.value);
+    this.input(target.value);
   }
 
   /**
@@ -166,7 +144,7 @@ class TInput extends InputComponent {
   public selectHandler(e: InputEvent): void {
     const target = e.target as HTMLInputElement;
 
-    this.setCaretTo(this._value, target.selectionEnd);
+    this.updateCaretPos();
 
     this.markForVerify();
   }
@@ -174,7 +152,7 @@ class TInput extends InputComponent {
   protected updateValue(val: string, selectionIndex: number): void {
     this._value = val;
 
-    this.setCaretTo(this._value, selectionIndex);
+    this.updateCaretPos();
 
     this.markForVerify();
   }
@@ -183,40 +161,43 @@ class TInput extends InputComponent {
    * Event emitter
    * @param {Event} e
    */
-  /*public change(e: Event): void {
-    const target = e.target as HTMLInputElement;
-    this.emitEvent("change", target.value);
-  }*/
+  public change(val: string): void {
+    this.emitEvent("change", val);
+  }
 
   /**
    * Event emitter
    * @param {InputEvent} e
    */
-  /*public input(e: InputEvent): void {
-    const target = e.target as HTMLInputElement;
-    this.emitEvent("input", target.value);
-  }*/
+  public input(val: string): void {
+    this.emitEvent("input", val);
+  }
 
-  /**
-   * Set caret position to index
-   * @param {string} val
-   * @param {number} index 
-   */
-  protected setCaretTo(val: string, index: number): void {
+  protected updateCaretPos(): void {
     // this._selectionValue = val.slice(0, index);
 
     // this._caretComponent.nativeElement.element.left = 
+    // this.calcCaretPos();
+  }
+
+  protected calcCaretPos(): number {
+    const inputRef = this._inputComponent.nativeElement.element;
+
+    if (!inputRef) {
+      return 0;
+    }
+
+    const result = 0;
+
+
+    return result;
   }
 
   /**
    * change value handler
    */
   public keydownHandler(e: KeyboardEvent): void {
-    const target = e.target as HTMLInputElement;
-  
-    this.setCaretTo(this._value, target.selectionEnd);
-
-    this.markForVerify();
+    this.updateCaretPos();
   }
 
   /**
@@ -228,23 +209,17 @@ class TInput extends InputComponent {
     this._inputComponent.nativeElement.addListener("pointermove", this._pointerMove);
     this._inputComponent.nativeElement.addListener("pointerup", this._pointerUp);
   
-    this.setCaretTo(this._value, target.selectionEnd);
-
-    this.markForVerify();
+    this.updateCaretPos();
   }
 
   private _pointerMove(e: PointerEvent): void {
 
-    this.setCaretTo(this._value, this._inputComponent.nativeElement.element.selectionEnd);
-
-    this.markForVerify();
+    this.updateCaretPos();
   }
 
   private _pointerUp(e: PointerEvent): void {
 
-    this.setCaretTo(this._value, this._inputComponent.nativeElement.element.selectionEnd);
-
-    this.markForVerify();
+    this.updateCaretPos();
 
     this._inputComponent.nativeElement.addListener("pointermove", this._pointerMove);
     this._inputComponent.nativeElement.addListener("pointerup", this._pointerUp);
@@ -263,6 +238,23 @@ class TInput extends InputComponent {
       addClass(this.nativeElement.element, "focus");
     } else {
       removeClass(this.nativeElement.element, "focus");
+    }
+  }
+
+  public setCaretComponent(v: HTMLComponent): void {
+    if (this._caretComponent !== v) {
+      this._caretComponent = v;
+
+
+      this.markForVerify();
+    }
+  }
+  public setInputComponent(v: InputComponent): void {
+    if (this._inputComponent !== v) {
+      this._inputComponent = v;
+
+
+      this.markForVerify();
     }
   }
 }

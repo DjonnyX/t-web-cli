@@ -1,7 +1,11 @@
 import App from "./App";
+import { mount } from "./cyclone/utils/dom";
 
-test("The App must be initialized.", () => {
+describe("App", () => {
   const app = new App();
-  
-  expect(document.contains(app.nativeElement.element || null)).toBeDefined();
+  mount(document.body, app.nativeElement.element);
+
+  it("must be montained", () => {
+    expect(document.getElementsByTagName("root").length).toEqual(1);
+  });
 });

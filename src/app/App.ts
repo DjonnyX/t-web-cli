@@ -1,16 +1,28 @@
-import { Component } from "./cyclone/display";
-import { cModule } from "./cyclone/module";
+import { HTMLComponent, IComponentOptions } from "./cyclone/display";
+import { tInputModule } from "./components";
+import { LoginLayout } from "./layouts";
+import rootModule from "./root-module";
 
-export default class App extends Component {
+/**
+ * @author Eugene Grebennikov (djonnyx@gmail.com)
+ */
+export default class App extends HTMLComponent {
+  public static readonly meta: IComponentOptions = {
+    template: `<t-login></t-login>`,
+    selectorName: "root",
+    cModule: rootModule
+  };
+
   constructor() {
-    super({
-      template: `<a><a>test</a></a>`,
-      selectorName: "root",
-      cModule: cModule
-    });
+    super(App.meta);
   }
 }
 
-cModule.components = {
-  "App": App
+// export the App class to the list of modules
+rootModule.components = {
+  App,
+  LoginLayout
+};
+rootModule.modules = {
+  tInputModule
 };

@@ -1,0 +1,27 @@
+@import "../colors";
+
+$max-size: 2em;
+$step: 0.2em;
+
+$color-1: $color-text-main;
+$color-2: rgba($color-text-main, 0.47);
+
+@for $i from 0 through 7 {
+  h#{$i + 1} {
+    font-size: $max-size - $step;
+    font-family: inherit;
+    @if $i <= 5 {
+      font-weight: 500;
+      color: $color-1;
+    } @else {
+      font-weight: 400;
+      color: $color-2;
+    }
+  }
+}
+
+p {
+    font-size: $max-size / 2;
+    font-weight: 400;
+    color: $color-2;
+}

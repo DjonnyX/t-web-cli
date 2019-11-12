@@ -9,6 +9,10 @@ const mount = (
   if (!childNode) {
     throw new Error(`"childNode" is not defined.`);
   }
+  
+  if (parentNode.contains(childNode)) {
+    return;
+  }
 
   parentNode.appendChild(childNode);
 };

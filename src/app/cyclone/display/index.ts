@@ -1,5 +1,7 @@
-import Component from "./Component";
+import InputComponent from "./InputComponent";
+import HTMLComponent from "./HTMLComponent";
+import TextComponent from "./TextComponent";
 
 export * from "./base";
 export * from "./interfaces";
-export { Component };
+export { TextComponent, InputComponent, HTMLComponent };

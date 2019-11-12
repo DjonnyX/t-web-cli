@@ -1,41 +1,51 @@
 @import "../styles/input";
 @import "../styles/utils";
+@import "../styles/vars";
 
 $ease: cubic-bezier(0.5, 0, 0.5, 1);
 $animation-placeholder: 0.4s $ease;
 $animation-border: 0.2s $ease;
 
-$t-input-margin-lrb-inactive: 1em / 16em;
-$t-input-margin-lrb-focus: 0em;
+$border-width: px2em(1, $base-content-size);
+$border-width-focus: px2em(2, $base-content-size);
+$border-sub: $border-width-focus - $border-width;
 
-$padding: 0.35em;
-
-$t-input-height: 2em;
+$t-input-font-size: px2em(16, $base-content-size);
+$t-input-line-height: px2em(24, $base-content-size);
+$t-input-height: px2em(54, $base-content-size);
+$t-input-padding-v: ($t-input-height - $t-input-line-height) * 0.5;
+$t-input-padding-h: px2em(16, $base-content-size);
+$t-input-padding-v-focus: ($t-input-height - $t-input-line-height) * 0.5;
+$t-input-padding-h-focus: px2em(16, $base-content-size);
 
 // placeholder
-$t-placeholder-focus-scale: 0.8;
-$t-placeholder-line-height: 1em;
-$t-placeholder-padding-h: 0.5em;
+$t-placeholder-focus-scale: 0.75;
+$t-placeholder-line-height: px2em(16, $base-content-size);
+$t-placeholder-padding-h: px2em(5, $base-content-size) *
+  $t-placeholder-focus-scale;
+$t-placeholder-padding-v: ($t-input-height - $t-placeholder-line-height) * 0.5;
+$t-placeholder-padding-v-focus: $t-placeholder-padding-v /
+  $t-placeholder-focus-scale;
 
 // focused height
 $t-placeholder-height-focus: $t-placeholder-line-height *
   $t-placeholder-focus-scale;
 
+$t-caret-y: -($t-input-height - $t-placeholder-line-height) * 0.5;
+
 // normal
-$t-placeholder-y: ($t-input-height + $t-input-margin-lrb-inactive) * 0.5 -
-  $t-placeholder-line-height;
+$t-placeholder-y: 0;
 
 // focused
-$t-placeholder-focus-y: -($t-input-height + $t-input-margin-lrb-focus -
-      $t-placeholder-line-height * 0.25);
+$t-placeholder-focus-y: -($t-input-height - $t-placeholder-height-focus * 0.5) * 0.5;
 
-$t-margin-top: 0.4em;
-$t-padding-top: $t-input-height * 0.5;
+$t-margin-top: px2em(12, $base-content-size);
+$t-input-radius: px2em(8, $base-content-size);
 
 // the maintainer class is currently in conflict with dynamic className properties
 .t-input {
-  border-radius: 8px;
-  padding: 20px;
+  border-radius: $t-input-radius;
+  padding: $t-input-padding-v $t-input-padding-h;
   display: block;
   position: relative;
   background: inherit;
@@ -43,35 +53,53 @@ $t-padding-top: $t-input-height * 0.5;
 
   input {
     @include t-input-to-default;
-    background: none;
+    font-size: $t-input-font-size;
     color: inherit;
+    caret-color: transparent;
+    z-index: 2;
+    margin: 0 $border-sub $border-sub $border-sub;
+    line-height: $t-input-height;
+
+    &.focus {
+      outline: none;
+      margin: 0 $border-sub $border-sub $border-sub;
+    }
+  }
+
+  .caret {
+    position: absolute;
+    background: $color-selected;
+    width: 2px;
+    height: $t-input-line-height;
   }
 
   label {
-    border-radius: 8px;
-    border: 1px solid $input-color-inactive;
-    position: absolute;
+    border-radius: $t-input-radius;
+    border: $border-width solid $input-color-inactive;
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    height: 100%;
+    height: $t-input-height;
     width: 100%;
-    top: 0;
-    left: 0;
+    background: inherit;
+    padding-left: $t-input-padding-h;
+    padding-right: $t-input-padding-h;
+    margin: 0 $border-sub;
   }
 
   .t-input__placeholder {
     pointer-events: none;
     color: $input-color-focus;
     position: absolute;
-    left: 0;
+    left: $t-input-padding-h;
     transition: transform $animation-placeholder,
       background-color $animation-placeholder;
     transform: translateY($t-placeholder-y);
     transform-origin: 0 0;
-    padding: 0 $t-placeholder-padding-h;
+    padding-left: $t-placeholder-padding-h;
+    padding-right: $t-placeholder-padding-h;
+    margin-left: $t-input-padding-h;
     background: none;
-    margin-left: $t-placeholder-padding-h;
     z-index: 1;
 
     &.focus,
@@ -82,14 +110,19 @@ $t-padding-top: $t-input-height * 0.5;
   }
 
   &.focus {
+    padding: $t-input-padding-v-focus $t-input-padding-h-focus;
+
     .t-input__placeholder {
       color: $input-placeholder-color-focus;
     }
 
     label {
-      border-width: 2px;
+      margin: 0;
+      border-width: $border-width-focus;
       border-color: $input-color-focus;
       transition: border-color $animation-border;
+      padding-left: $t-input-padding-h-focus;
+      padding-right: $t-input-padding-h-focus;
     }
   }
 
@@ -100,4 +133,20 @@ $t-padding-top: $t-input-height * 0.5;
       color: $input-placeholder-color-inactive;
     }
   }
+
+  .t-input__caret {
+    pointer-events: none;
+    position: absolute;
+    width: 2px;
+    height: 100%;
+    background: $input-caret-color;
+  }
+
+    /*.caret__shape {
+      pointer-events: none;
+      position: absolute;
+      width: 2px;
+      height: 100%;
+      background: $input-caret-color;
+    }*/
 }

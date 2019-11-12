@@ -5,7 +5,7 @@ import {
   IComponentRemoveChildOptions
 } from "../../interfaces";
 import { IModule } from "../../../module";
-import { mount } from "../../../utils/dom";
+import { mount, unmount } from "../../../utils/dom";
 import { RuntimeErrors } from "../../../runtime";
 import { cyclone, CSerializer } from "../../../core";
 import BaseComponent from "./BaseComponent";
@@ -43,10 +43,6 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
     [propName: string]: () => any;
   } = {};
 
-  protected _linkedElRefs: {
-    [name: string]: () => any;
-  } = {};
-
   protected _interactionSubscriptions = Array<Subscription>();
 
   public markForVerify(): void {
@@ -54,6 +50,10 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
     for (const child of this._children) {
       child.markForVerify();
     }
+  }
+
+  constructor() {
+    super();
   }
 
   protected _detectChanges = (): void => {
@@ -108,13 +108,6 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
     externalProperty: () => T
   ): void => {
     linkExternalProperty(this._linkedDOMProps, propName, externalProperty);
-  };
-
-  public readonly linkElRefs = <T = any>(
-    propName: string,
-    externalProperty: () => T
-  ): void => {
-    linkExternalProperty(this._linkedElRefs, propName, externalProperty);
   };
 
   public readonly addInteractionEvent = <T = any>(
@@ -183,13 +176,16 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
     this.markForVerify();
   };
 
-  public addChild<E extends Node>(
-    child: NodeComponent<E>
-  ): NodeComponent<E> {
+  public addChild<E extends Node>(child: NodeComponent<E>): NodeComponent<E> {
     this._children.push(child);
     child._parent = this;
 
-    mount(this.nativeElement.element as any, child.nativeElement.element as any);
+    mount(
+      this.nativeElement.element as any,
+      child.nativeElement.element as any
+    );
+  
+    this.emitEvent("viewChild", this);
 
     return child;
   }
@@ -202,15 +198,16 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
     if (index > -1) {
       this._children.splice(index, 1);
 
-      if (this._parent) {
-        this._parent.removeChild(this);
-      }
+      unmount(this._parent.nativeElement.element, this.nativeElement.element);
+      this._parent = null;
 
       if (options.dispose) {
         child.dispose({
           disposeChildren: options.dispose
         });
       }
+
+      this.emitEvent("viewChild", null);
     }
 
     return child;
@@ -220,18 +217,11 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
     options: IComponentRemoveChildOptions = { dispose: false }
   ): void {
     while (this._children.length) {
-      const child = this._children.shift();
-      if (options.dispose) {
-        child.dispose({
-          disposeChildren: options.dispose
-        });
-      }
+      this.removeChild(this._children[0], options);
     }
   }
 
-  public contains<E extends Node = any>(
-    child: NodeComponent<E>
-  ): boolean {
+  public contains<E extends Node = any>(child: NodeComponent<E>): boolean {
     return this._children.indexOf(child) > -1;
   }
 
@@ -294,7 +284,6 @@ export default abstract class NodeComponent<Node> extends BaseComponent {
   protected removeLinkedProps(): void {
     unlinkExternalProperty(this._linkedDOMProps);
     unlinkExternalProperty(this._linkedProps);
-    unlinkExternalProperty(this._linkedElRefs);
   }
 
   public dispose(

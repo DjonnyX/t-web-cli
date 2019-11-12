@@ -1,24 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import "./TInput.style.scss";
-import { InputComponent, IComponentOptions } from "../../cyclone/display";
+import { InputComponent, IComponentOptions, HTMLComponent } from "../../cyclone/display";
 import { addClass, removeClass } from "../../cyclone/utils/dom";
 import tInputModule from "./TInput.module";
 
 class TInput extends InputComponent {
   public static readonly meta: IComponentOptions = {
     template: `
-        <input id={id} (change)={inputChange} value={value} (focus)={focusHandler} (blur)={blurHandler}></input>
-        <span className={lClass}>{placeholder}
-          <div></div>
-        </span>
-        <label htmlFor={id}></label>
+      <label htmlFor={id}>
+        <input (viewChild)={setInputComponent} id={id} (input)={inputInputHandler} (select)="selectHandler" (change)={inputChangeHandler}
+          value={value} (focus)={focusHandler} (blur)={blurHandler} (keydown)="{keydownHandler} (pointerdown)="{pointerDownHandler}"></input>
+          <div (viewChild)={setCaretComponent} className="caret"></div>
+          <span className={lClass}>{placeholder}</span>
+      </label>
     `,
     maintainer: {
-      class: "t-input",
-      listeners: {
-        click: "maintainerClickHandler"
-      },
+      class: "t-input"
     },
     selectorName: "t-input",
     cModule: tInputModule
@@ -33,10 +31,40 @@ class TInput extends InputComponent {
     return `t-input__placeholder${this._focused ? " focus" : ""}${!Boolean(this._value) ? " empty" : " full"}`;
   }
 
+  private _inputComponent: InputComponent;
+  public setInputComponent(v: InputComponent) {
+    if (this._inputComponent !== v) {
+      this._inputComponent = v;
+
+
+      this.markForVerify();
+    }
+  }
+
+  public get inputComponent(): InputComponent {
+    return this._inputComponent;
+  }
+
+  private _caretComponent: HTMLComponent;
+  public setCaretComponent(v: HTMLComponent) {
+    if (this._caretComponent !== v) {
+      this._caretComponent = v;
+
+
+      this.markForVerify();
+    }
+  }
+
+  public get caretComponent(): HTMLComponent {
+    return this._caretComponent;
+  }
+
   private _value = "";
   public set value(v: string) {
     if (this._value !== v) {
       this._value = v || "";
+
+      this.setCaretTo(this._value, this._value.length);
 
       this.markForVerify();
     }
@@ -87,27 +115,139 @@ class TInput extends InputComponent {
     this.nativeElement.element.focus();
   }
 
+  /**
+   * @param {Event} e
+   */
   public focusHandler(e: Event): void {
     this.focused = true;
   }
 
+  /**
+   * @param {Event} e
+   */
   public blurHandler(e: Event): void {
     this.focused = false;
   }
 
   /**
    * change value handler
+   * @param {InputEvent} val
    */
-  public inputChange(e: any): void {
-    this.value = e.target.value;
-    this.changeValue(e);
+  public inputChangeHandler(e: InputEvent): void {
+    const target = e.target as HTMLInputElement;
+  
+    this.updateValue(target.value, target.selectionEnd);
+
+    //this.input(e);
+    //this.change(e);
+
+    
+    this.emitEvent("input", target.value);
+    this.emitEvent("change", target.value);
+  }
+
+  /**
+   * change value handler
+   * @param {InputEvent} e
+   */
+  public inputInputHandler(e: InputEvent): void {
+    const target = e.target as HTMLInputElement;
+  
+    this.updateValue(target.value, target.selectionEnd);
+  
+    //this.input(e);
+    
+    this.emitEvent("input", target.value);
+  }
+
+  /**
+   * @param {InputEvent} e
+   */
+  public selectHandler(e: InputEvent): void {
+    const target = e.target as HTMLInputElement;
+
+    this.setCaretTo(this._value, target.selectionEnd);
+
+    this.markForVerify();
+  }
+
+  protected updateValue(val: string, selectionIndex: number): void {
+    this._value = val;
+
+    this.setCaretTo(this._value, selectionIndex);
+
+    this.markForVerify();
   }
 
   /**
    * Event emitter
+   * @param {Event} e
    */
-  public changeValue(e: any): void {
-    this.emitEvent("changeValue", e.target.value);
+  /*public change(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this.emitEvent("change", target.value);
+  }*/
+
+  /**
+   * Event emitter
+   * @param {InputEvent} e
+   */
+  /*public input(e: InputEvent): void {
+    const target = e.target as HTMLInputElement;
+    this.emitEvent("input", target.value);
+  }*/
+
+  /**
+   * Set caret position to index
+   * @param {string} val
+   * @param {number} index 
+   */
+  protected setCaretTo(val: string, index: number): void {
+    // this._selectionValue = val.slice(0, index);
+
+    // this._caretComponent.nativeElement.element.left = 
+  }
+
+  /**
+   * change value handler
+   */
+  public keydownHandler(e: KeyboardEvent): void {
+    const target = e.target as HTMLInputElement;
+  
+    this.setCaretTo(this._value, target.selectionEnd);
+
+    this.markForVerify();
+  }
+
+  /**
+   * change value handler
+   */
+  public pointerdown(e: PointerEvent): void {
+    const target = e.target as HTMLInputElement;
+
+    this._inputComponent.nativeElement.addListener("pointermove", this._pointerMove);
+    this._inputComponent.nativeElement.addListener("pointerup", this._pointerUp);
+  
+    this.setCaretTo(this._value, target.selectionEnd);
+
+    this.markForVerify();
+  }
+
+  private _pointerMove(e: PointerEvent): void {
+
+    this.setCaretTo(this._value, this._inputComponent.nativeElement.element.selectionEnd);
+
+    this.markForVerify();
+  }
+
+  private _pointerUp(e: PointerEvent): void {
+
+    this.setCaretTo(this._value, this._inputComponent.nativeElement.element.selectionEnd);
+
+    this.markForVerify();
+
+    this._inputComponent.nativeElement.addListener("pointermove", this._pointerMove);
+    this._inputComponent.nativeElement.addListener("pointerup", this._pointerUp);
   }
 
   /**

@@ -1,4 +1,3 @@
-
 import "./LoginLayout.style.scss";
 import { HTMLComponent, IComponentOptions } from "../../cyclone/display";
 import { tInputModule } from "../../components";
@@ -10,13 +9,13 @@ import loginLayoutModule from "./LoginLayout.module";
 export default class LoginLayout extends HTMLComponent {
   public static readonly meta: IComponentOptions = {
     template: `<div className="t-wrapper">
+      <form>
       <div className="t-logo"></div>
       <div className="t-login__t-description">
         <h1 className="t-description__title">Sign in to Telegram</h1>
         <p className="t-description__text">Please confirm your country and enter your phone number.</p>
       </div>
-      <form>
-        <t-input (changeValue)={inputChange} [placeholder]="Phone number"></t-input>
+        <t-input (input)={inputChange} [placeholder]="Phone number"></t-input>
         <button (click)={clickHandler}>Next</button>
       </form>
     </div>`,

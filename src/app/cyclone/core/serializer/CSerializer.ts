@@ -132,10 +132,7 @@ class CSerializer {
         const mAttributes = selectorBody.match(ATTRS_REGEX);
         if (mAttributes) {
           for (let j = 0, l1 = mAttributes.length; j < l1; j++) {
-            
-        if (/(Phone number)/.test(mSegment)) {
-          console.log('Phone number')
-        }
+
             const mAttr = mAttributes[j];
 
             // events
@@ -224,14 +221,6 @@ class CSerializer {
                   // procedure | prop
                   attrValue = mAttrProcedureValue[0].replace(/{|}/gm, "");
 
-                  if (/__elRef__/.test(attrName)) {
-                    const prop = owner.makePropForBinding(attrValue);
-
-                    // if elRef is deleted, then it generates a supposed event that says that
-                    // it is necessary to clear elRef in the maintainer.
-                    component.linkElRefs(attrName, prop);
-                    continue;
-                  }
                   if (
                     !(
                       attrName in

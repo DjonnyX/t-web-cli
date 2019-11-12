@@ -1,11 +1,11 @@
 @import "./colors";
 
-$input-color-inactive: $color-inactive;
+$input-color-normal: $color-normal;
 $input-color-focus: $color-selected;
 $input-color-warn: $color-warn;
 $input-caret-color: $color-selected;
 $input-placeholder-color-focus: $color-selected;
-$input-placeholder-color-inactive: rgba($color-text-main, 0.47);
+$input-placeholder-color-normal: rgba($color-text-main, 0.47);
 
 @mixin t-input-to-default {
   background: 0 0;

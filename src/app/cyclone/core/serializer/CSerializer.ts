@@ -1,5 +1,10 @@
 import { RuntimeErrors } from "../../runtime";
-import { NodeComponent, HTMLComponent, BaseComponent } from "../../display";
+import {
+  NodeComponent,
+  HTMLComponent,
+  BaseComponent,
+  TextComponent
+} from "../../display";
 import { IModule } from "../../module";
 import { getCClass } from "./helpers";
 import {
@@ -15,10 +20,12 @@ import {
   ATTR_NAME_EVENT_REGEXP,
   PROCEDURE_TEXT_REGEX,
   ATTR_NAME_COMP_REGEXP,
-  PROCEDURE_SEGMENT_REGEXP
+  PROCEDURE_SEGMENT_REGEXP,
+  NODE_TEXT_WHITESPACE,
+  PLAIN_ATTR_REGEX,
+  COMP_SIMPLE_PROP_REGEX
 } from "./helpers/regex";
 import { cyclone } from "..";
-import TextComponent from "../../display/TextComponent";
 
 /**
  * Serializing simple template with events, binding methods
@@ -33,6 +40,13 @@ import TextComponent from "../../display/TextComponent";
  * some {textValue} for {ownerValue} - text with properties binding
  */
 class CSerializer {
+
+  /**
+   * Parse template
+   * @param {NodeComponent<any>} owner 
+   * @param {string} template 
+   * @param {IModule} cModule 
+   */
   public static parse(
     owner: NodeComponent<any>,
     template: string,
@@ -54,7 +68,12 @@ class CSerializer {
       const mSegment = mSegments[i];
       const mSelectorBody = mSegment.match(TAG_REGEX);
 
+      const mSegmentNormalized = mSegment.replace(NODE_TEXT_WHITESPACE, "");
       if (!mSelectorBody) {
+        if (!Boolean(mSegmentNormalized)) {
+          continue;
+        }
+
         // text content
         const component = new TextComponent();
 
@@ -77,17 +96,12 @@ class CSerializer {
 
               const prop = owner.makePropForBinding(segmentPropName);
 
-              component.addPropertyToContentText(
-                segmentPropName,
-                prop
-              );
+              component.addPropertyToContentText(segmentPropName, prop);
 
               continue;
             }
 
-            component.addTextSegmentToContentText(
-              innerTextSegment
-            );
+            component.addTextSegmentToContentText(innerTextSegment);
           }
         } else if ("textContent" in mounter.nativeElement.element && mSegment) {
           component.data = mSegment;
@@ -118,6 +132,7 @@ class CSerializer {
         const mAttributes = selectorBody.match(ATTRS_REGEX);
         if (mAttributes) {
           for (let j = 0, l1 = mAttributes.length; j < l1; j++) {
+
             const mAttr = mAttributes[j];
 
             // events
@@ -153,10 +168,11 @@ class CSerializer {
               const mAttrValue = mAttr.match(PROCEDURE_ATTR_REGEX);
 
               if (!(mAttrValue && mAttrValue.length)) {
+                this.updateComponentProperyValue(component, attrName, mAttr);
                 continue;
               }
 
-              if (PROCEDURE_ATTR_REGEX.test(mAttrValue[0])) {
+              if (PROCEDURE_ATTR_REGEX.test(mAttrValue[0]) && !PLAIN_ATTR_REGEX.test(mAttrValue[0])) {
                 const mAttrProcedureValue = mAttr.match(PROCEDURE_ATTR_REGEX);
                 if (mAttrProcedureValue && mAttrProcedureValue.length > 0) {
                   // procedure | prop
@@ -174,13 +190,17 @@ class CSerializer {
 
                   const prop = owner.makePropForBinding(attrValue);
 
-                  component.bindProperty(attrName, prop);
+                  component.linkProperty(attrName, prop);
                   continue;
                 }
               }
+              // static
+              else if (attrName in (component as Record<string, any>)) {
+                this.updateComponentProperyValue(component, name, mAttr);
+              }
             }
 
-            // dom properties
+            // dom properties / ref
             if (ATTR_NAME_REGEX.test(mAttr)) {
               const attrName = mAttr.match(ATTR_NAME_REGEX)[0];
 
@@ -194,7 +214,7 @@ class CSerializer {
 
               let attrValue = undefined;
 
-              // props / methods
+              // props
               if (PROCEDURE_ATTR_REGEX.test(mAttrValue[0])) {
                 const mAttrProcedureValue = mAttr.match(PROCEDURE_ATTR_REGEX);
                 if (mAttrProcedureValue && mAttrProcedureValue.length > 0) {
@@ -218,7 +238,7 @@ class CSerializer {
 
                   const prop = owner.makePropForBinding(attrValue);
 
-                  component.bindDomProperty(attrName, prop);
+                  component.linkDomProperty(attrName, prop);
                   continue;
                 }
               }
@@ -248,7 +268,15 @@ class CSerializer {
     }
   }
 
-  protected static getHTMLComponent(name: string, cModule: IModule): NodeComponent<any> {
+  /**
+   * Get HTMLComponent from class meta property
+   * @param {string} name 
+   * @param {IModule} cModule 
+   */
+  protected static getHTMLComponent(
+    name: string,
+    cModule: IModule
+  ): NodeComponent<any> {
     const CClass = getCClass(cModule, name);
 
     return CClass
@@ -259,13 +287,40 @@ class CSerializer {
         });
   }
 
-  protected static attach(mounter: NodeComponent<Node>, component: BaseComponent<Node>): void {
-    
+  /**
+   * Attach node to owner
+   * @param {NodeComponent<Node>} mounter 
+   * @param {BaseComponent} component 
+   */
+  protected static attach(
+    mounter: NodeComponent<Node>,
+    component: BaseComponent
+  ): void {
     component.beforeAttach();
 
     mounter.addChild(component as any);
 
     cyclone.addDeferCall(component.afterAttach);
+  }
+
+  /**
+   * Setup plain text
+   * @param {BaseComponent} component 
+   * @param {string} name 
+   * @param {string} attrPair 
+   */
+  protected static updateComponentProperyValue(component: BaseComponent, name: string, attrPair: string): void {
+    const mAttr = attrPair.match(COMP_SIMPLE_PROP_REGEX);
+
+    if (!(mAttr && mAttr.length)) {
+      return;
+    }
+
+    const value = mAttr[0].replace(/'|"/gm, "");
+
+    if (name in (component as Record<string, any>)) {
+      (component as Record<string, any>)[name] = value;
+    }
   }
 }
 

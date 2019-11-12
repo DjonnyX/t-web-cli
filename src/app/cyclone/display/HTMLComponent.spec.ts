@@ -1,9 +1,9 @@
 import { HTMLComponent } from ".";
 import CModule from "../module/CModule";
 import { mount } from "../utils/dom";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Observable, timer } from "rxjs";
 import { IComponentOptions } from "./interfaces";
+import { NodeComponent } from "./base";
 
 const testModule = new CModule();
 
@@ -34,7 +34,7 @@ class TestComponent extends HTMLComponent {
     return this._isTesting ? "tested-class" : "";
   }
 
-  public get children(): Array<HTMLComponent<any>> {
+  public get children(): Array<NodeComponent<any>> {
     return this._children;
   }
 
@@ -68,10 +68,10 @@ class SubComponent extends HTMLComponent {
 
   public static instance: SubComponent;
 
-  public get events(): {
+  public get linkedEvents(): {
     [eventTypes: string]: { executor: Function; emitter: Observable<any> };
   } {
-    return this._events;
+    return this._linkedEvents;
   }
 
   constructor() {
@@ -112,7 +112,7 @@ describe("Component injection", () => {
   });
 
   it("the events object must contain a click event", () => {
-    expect(SubComponent.instance.events["click"]).toBeDefined();
+    expect(SubComponent.instance.linkedEvents["click"]).toBeDefined();
   });
 
   it("TestComponent must contain a child", () => {

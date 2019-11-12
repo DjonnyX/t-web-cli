@@ -1,6 +1,6 @@
 import "./LoginLayout.style.scss";
 import { HTMLComponent, IComponentOptions } from "../../cyclone/display";
-import { tInputModule } from "../../components";
+import { tInputModule, tButtonModule } from "../../components";
 import loginLayoutModule from "./LoginLayout.module";
 
 /**
@@ -16,7 +16,7 @@ export default class LoginLayout extends HTMLComponent {
         <p className="t-description__text">Please confirm your country and enter your phone number.</p>
       </div>
         <t-input (input)={inputChange} [placeholder]="Phone number"></t-input>
-        <button (click)={clickHandler}>Next</button>
+        <t-button [class]="primary" (click)={clickHandler} [label]="Next"></t-button>
       </form>
     </div>`,
     selectorName: "t-login",
@@ -68,5 +68,6 @@ loginLayoutModule.components = {
   LoginLayout
 };
 loginLayoutModule.modules = {
-  tInputModule
+  tInputModule,
+  tButtonModule
 };

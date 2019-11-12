@@ -1,3 +1,2 @@
-import "./styles/_index.scss";
-
 export * from "./input";
+export * from "./button";

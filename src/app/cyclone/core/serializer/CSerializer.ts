@@ -23,9 +23,11 @@ import {
   PROCEDURE_SEGMENT_REGEXP,
   NODE_TEXT_WHITESPACE,
   PLAIN_ATTR_REGEX,
-  COMP_SIMPLE_PROP_REGEX
+  COMP_SIMPLE_PROP_REGEX,
+  CLASS_REGEX
 } from "./helpers/regex";
 import { cyclone } from "..";
+import { addClass } from "../../utils/dom";
 
 /**
  * Serializing simple template with events, binding methods
@@ -40,12 +42,11 @@ import { cyclone } from "..";
  * some {textValue} for {ownerValue} - text with properties binding
  */
 class CSerializer {
-
   /**
    * Parse template
-   * @param {NodeComponent<any>} owner 
-   * @param {string} template 
-   * @param {IModule} cModule 
+   * @param {NodeComponent<any>} owner
+   * @param {string} template
+   * @param {IModule} cModule
    */
   public static parse(
     owner: NodeComponent<any>,
@@ -132,7 +133,6 @@ class CSerializer {
         const mAttributes = selectorBody.match(ATTRS_REGEX);
         if (mAttributes) {
           for (let j = 0, l1 = mAttributes.length; j < l1; j++) {
-
             const mAttr = mAttributes[j];
 
             // events
@@ -172,7 +172,10 @@ class CSerializer {
                 continue;
               }
 
-              if (PROCEDURE_ATTR_REGEX.test(mAttrValue[0]) && !PLAIN_ATTR_REGEX.test(mAttrValue[0])) {
+              if (
+                PROCEDURE_ATTR_REGEX.test(mAttrValue[0]) &&
+                !PLAIN_ATTR_REGEX.test(mAttrValue[0])
+              ) {
                 const mAttrProcedureValue = mAttr.match(PROCEDURE_ATTR_REGEX);
                 if (mAttrProcedureValue && mAttrProcedureValue.length > 0) {
                   // procedure | prop
@@ -196,7 +199,7 @@ class CSerializer {
               }
               // static
               else if (attrName in (component as Record<string, any>)) {
-                this.updateComponentProperyValue(component, name, mAttr);
+                this.updateComponentProperyValue(component, attrName, mAttr);
               }
             }
 
@@ -248,7 +251,11 @@ class CSerializer {
                 attrValue = mAttrValue[0].replace(/'|"/gm, "");
 
                 if (attrName in component.nativeElement.element) {
-                  component.nativeElement.element[attrName] = attrValue;
+                  if (CLASS_REGEX.test(attrName)) {
+                    addClass(component.nativeElement.element, attrValue);
+                  } else {
+                    component.nativeElement.element[attrName] = attrValue;
+                  }
                   continue;
                 }
 
@@ -270,8 +277,8 @@ class CSerializer {
 
   /**
    * Get HTMLComponent from class meta property
-   * @param {string} name 
-   * @param {IModule} cModule 
+   * @param {string} name
+   * @param {IModule} cModule
    */
   protected static getHTMLComponent(
     name: string,
@@ -289,8 +296,8 @@ class CSerializer {
 
   /**
    * Attach node to owner
-   * @param {NodeComponent<Node>} mounter 
-   * @param {BaseComponent} component 
+   * @param {NodeComponent<Node>} mounter
+   * @param {BaseComponent} component
    */
   protected static attach(
     mounter: NodeComponent<Node>,
@@ -305,11 +312,15 @@ class CSerializer {
 
   /**
    * Setup plain text
-   * @param {BaseComponent} component 
-   * @param {string} name 
-   * @param {string} attrPair 
+   * @param {BaseComponent} component
+   * @param {string} name
+   * @param {string} attrPair
    */
-  protected static updateComponentProperyValue(component: BaseComponent, name: string, attrPair: string): void {
+  protected static updateComponentProperyValue(
+    component: BaseComponent,
+    name: string,
+    attrPair: string
+  ): void {
     const mAttr = attrPair.match(COMP_SIMPLE_PROP_REGEX);
 
     if (!(mAttr && mAttr.length)) {
@@ -319,7 +330,11 @@ class CSerializer {
     const value = mAttr[0].replace(/'|"/gm, "");
 
     if (name in (component as Record<string, any>)) {
-      (component as Record<string, any>)[name] = value;
+      if (CLASS_REGEX.test(name)) {
+        addClass(component.nativeElement.element, value);
+      } else {
+        (component as Record<string, any>)[name] = value;
+      }
     }
   }
 }

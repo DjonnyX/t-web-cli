@@ -15,3 +15,4 @@ export const PROCEDURE_TEXT_REGEX = /({.*?})|[^({.*?})]+/gm;
 export const PROCEDURE_SEGMENT_REGEXP = /({.*?})/m;
 export const NODE_TEXT_WHITESPACE = /({.*?}|[^({.*?})])(^\s+)/gm;
 export const COMP_SIMPLE_PROP_REGEX = /([\"|\'].*?\s?[\"|\'])/gm;
+export const CLASS_REGEX = /^class?/;

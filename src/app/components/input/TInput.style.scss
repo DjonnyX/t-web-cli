@@ -45,17 +45,17 @@ $t-input-radius: px2em(8, $base-content-size);
 // the maintainer class is currently in conflict with dynamic className properties
 .t-input {
   border-radius: $t-input-radius;
-  padding: $t-input-padding-v $t-input-padding-h;
+  margin: $t-input-padding-v $t-input-padding-h;
   display: block;
   position: relative;
   background: inherit;
-  margin-top: $t-margin-top;
+  // margin-top: $t-margin-top;
 
   input {
     @include t-input-to-default;
     font-size: $t-input-font-size;
     color: inherit;
-    caret-color: transparent;
+    /*caret-color: transparent;*/
     z-index: 2;
     margin: 0 $border-sub $border-sub $border-sub;
     line-height: $t-input-height;
@@ -66,16 +66,16 @@ $t-input-radius: px2em(8, $base-content-size);
     }
   }
 
-  .caret {
+  /*.t-input__caret {
     position: absolute;
     background: $color-selected;
     width: 2px;
     height: $t-input-line-height;
-  }
+  }*/
 
   label {
     border-radius: $t-input-radius;
-    border: $border-width solid $input-color-inactive;
+    border: $border-width solid $input-color-normal;
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -98,7 +98,6 @@ $t-input-radius: px2em(8, $base-content-size);
     transform-origin: 0 0;
     padding-left: $t-placeholder-padding-h;
     padding-right: $t-placeholder-padding-h;
-    margin-left: $t-input-padding-h;
     background: none;
     z-index: 1;
 
@@ -110,7 +109,7 @@ $t-input-radius: px2em(8, $base-content-size);
   }
 
   &.focus {
-    padding: $t-input-padding-v-focus $t-input-padding-h-focus;
+    margin: $t-input-padding-v-focus $t-input-padding-h-focus;
 
     .t-input__placeholder {
       color: $input-placeholder-color-focus;
@@ -127,26 +126,10 @@ $t-input-radius: px2em(8, $base-content-size);
   }
 
   &:not(.focus) {
-    border-color: $input-color-inactive;
+    border-color: $input-color-normal;
 
     .t-input__placeholder {
-      color: $input-placeholder-color-inactive;
+      color: $input-placeholder-color-normal;
     }
   }
-
-  .t-input__caret {
-    pointer-events: none;
-    position: absolute;
-    width: 2px;
-    height: 100%;
-    background: $input-caret-color;
-  }
-
-    /*.caret__shape {
-      pointer-events: none;
-      position: absolute;
-      width: 2px;
-      height: 100%;
-      background: $input-caret-color;
-    }*/
 }

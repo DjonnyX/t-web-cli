@@ -1,0 +1,69 @@
+@import "../base/reset-button";
+@import "../themes";
+@import "../utils";
+@import "../abstracts/vars";
+@import "../abstracts/colors";
+
+$ease: cubic-bezier(0.5, 0, 0.5, 1);
+$animation-placeholder: 0.4s $ease;
+$animation-border: 0.2s $ease;
+
+/*$button-color-normal: $color-selected;
+$button-color-focus: $color-selected;
+$button-color-warn: $color-warn;
+$button-color-disabled: $color-disabled;*/
+$button-label-color: rgba($color-text-main, 0.47);
+
+$t-button-min-width: px2em(32, $base-content-size);
+$t-button-line-height: px2em(18, $base-content-size);
+$t-button-font-size: px2em(16, $base-content-size);
+$t-button-height: px2em(54, $base-content-size);
+$t-button-border-radius: $base-radius;
+$t-button-label-padding: px2em(10, $base-content-size)
+	px2em(18, $base-content-size);
+$t-button-padding: px2em(10, $base-content-size) px2em(18, $base-content-size);
+
+.t-button {
+	position: relative;
+	display: inline-block;
+	width: 100%;
+	height: $t-button-height;
+	background: none;
+
+	button {
+		@include reset-button();
+		min-width: $t-button-min-width;
+		line-height: $t-button-line-height;
+		padding: $t-button-padding;
+		border-radius: $t-button-border-radius;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		background: none;
+		color: inherit;
+		text-align: inherit;
+
+		@include themify($themes) {
+			& {
+				background: themed("f-0");
+
+				&:disabled {
+					background: rgba(themed("f-0"), 0.1);
+				}
+			}
+		}
+
+		.t-button__label {
+			box-sizing: border-box;
+			width: 100%;
+			size: $t-button-font-size;
+			padding: $t-button-label-padding;
+			color: inherit;
+			text-align: inherit;
+		}
+
+		.t-button__overlay {
+			position: relative;
+		}
+	}
+}

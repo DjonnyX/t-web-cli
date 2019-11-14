@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
-import "./TInput.style.scss";
+import "../../../styles/components/_input.scss";
 import { InputComponent, IComponentOptions, HTMLComponent } from "../../cyclone/display";
 import { addClass, removeClass } from "../../cyclone/utils/dom";
 import tInputModule from "./TInput.module";
@@ -16,7 +15,7 @@ class TInput extends InputComponent {
       </label>
     `,
     maintainer: {
-      class: "t-input"
+      class: "t-input",
     },
     selectorName: "t-input",
     cModule: tInputModule

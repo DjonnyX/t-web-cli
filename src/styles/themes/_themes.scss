@@ -1,0 +1,10 @@
+@import "./theme-light-blue";
+@import "../abstracts/vars";
+@import "../abstracts/colors";
+
+// light-blue theme
+$light-blue: set-map($theme-light-blue);
+
+$themes: (
+    $light-blue
+);

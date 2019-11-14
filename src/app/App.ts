@@ -10,6 +10,9 @@ export default class App extends HTMLComponent {
   public static readonly meta: IComponentOptions = {
     template: `<t-login></t-login>`,
     selectorName: "root",
+    maintainer: {
+      class: "light-blue" // theme name
+    },
     cModule: rootModule
   };
 

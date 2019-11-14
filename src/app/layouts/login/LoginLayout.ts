@@ -1,4 +1,4 @@
-import "./LoginLayout.style.scss";
+import "../../../styles/layouts/_login.scss";
 import { HTMLComponent, IComponentOptions } from "../../cyclone/display";
 import { tInputModule, tButtonModule } from "../../components";
 import loginLayoutModule from "./LoginLayout.module";

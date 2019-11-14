@@ -1,6 +1,14 @@
-@import "../styles/input";
-@import "../styles/utils";
-@import "../styles/vars";
+@import "../base/reset-input";
+@import "../utils/px2em";
+@import "../abstracts/vars";
+@import "../abstracts/colors";
+
+$input-color-normal: $color-normal;
+$input-color-focus: $color-selected;
+$input-color-warn: $color-warn;
+$input-caret-color: $color-selected;
+$input-placeholder-color-focus: $color-selected;
+$input-placeholder-color-normal: rgba($color-text-main, 0.47);
 
 $ease: cubic-bezier(0.5, 0, 0.5, 1);
 $animation-placeholder: 0.4s $ease;
@@ -45,14 +53,14 @@ $t-input-radius: px2em(8, $base-content-size);
 // the maintainer class is currently in conflict with dynamic className properties
 .t-input {
   border-radius: $t-input-radius;
-  margin: $t-input-padding-v $t-input-padding-h;
+  margin-top: $t-input-padding-v;
   display: block;
   position: relative;
   background: inherit;
   // margin-top: $t-margin-top;
 
   input {
-    @include t-input-to-default;
+    @include reset-input();
     font-size: $t-input-font-size;
     color: inherit;
     /*caret-color: transparent;*/
@@ -109,7 +117,7 @@ $t-input-radius: px2em(8, $base-content-size);
   }
 
   &.focus {
-    margin: $t-input-padding-v-focus $t-input-padding-h-focus;
+    margin-top: $t-input-padding-v-focus;
 
     .t-input__placeholder {
       color: $input-placeholder-color-focus;

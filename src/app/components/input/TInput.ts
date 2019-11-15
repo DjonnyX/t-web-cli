@@ -8,7 +8,7 @@ class TInput extends InputComponent {
   public static readonly meta: IComponentOptions = {
     template: `
       <label htmlFor={id}>
-        <input (viewChild)={setInputComponent} id={id} (input)={inputInputHandler} (select)="selectHandler" (change)={inputChangeHandler}
+        <input (__viewChild__)={setInputComponent} id={id} (input)={inputInputHandler} (select)="selectHandler" (change)={inputChangeHandler}
           value={value} (focus)={focusHandler} (blur)={blurHandler} (keydown)="{keydownHandler} (pointerdown)="{pointerDownHandler}"></input>
           <div (viewChild)={setCaretComponent} className="t-input__caret"></div>
           <span className={lClass}>{placeholder}</span>

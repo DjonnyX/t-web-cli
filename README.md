@@ -1,13 +1,13 @@
 # t-web-cli
 
 ### features:
-- Fully developed from scratch UI Framework
+- Fully developed from scratch UI Framework (I called it a cyclone)
 - Objects optimization
 - event system
 - html templates serializer
 - system of modules
 - Theme support
-- change detection strategy (to push)
+- change detection strategy (on push)
 - typescript
 - great test coverage
 
@@ -83,8 +83,8 @@ export default TButton;
 
 ```
 
-Styling
-
+__Styling__
+_styles.scss_
 ```scss
 $light-blue-color-text-light: #ffffff;
 $light-blue-color-text-dark: #000000;
@@ -100,7 +100,7 @@ $themes: (
 );
 ```
 
-component.scss
+_component.scss_
 ```scss
 t-button {
 	@include themify($themes) {

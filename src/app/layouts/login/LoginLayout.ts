@@ -11,7 +11,7 @@ export default class LoginLayout extends HTMLComponent {
     template: `<div className="t-wrapper">
       <form>
       <div className="t-logo"></div>
-      <div className="t-login__t-description">
+      <div className="t-login__description">
         <h1 className="t-description__title">Sign in to Telegram</h1>
         <p className="t-description__text">Please confirm your country and enter your phone number.</p>
       </div>
@@ -21,7 +21,7 @@ export default class LoginLayout extends HTMLComponent {
     </div>`,
     selectorName: "t-login",
     maintainer: {
-      class: "t-login"
+      class: "t-login primary"
     },
     cModule: loginLayoutModule
   };

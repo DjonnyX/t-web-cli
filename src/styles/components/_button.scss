@@ -23,6 +23,7 @@ $t-button-padding: px2em(10, $base-content-size) px2em(18, $base-content-size);
 		width: 100%;
 		height: $t-button-height;
 		background: none;
+		margin-bottom: px2em(24, $base-content-size);
 
 		button {
 			@include reset-button();

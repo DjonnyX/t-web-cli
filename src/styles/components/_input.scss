@@ -59,7 +59,7 @@ $t-input-radius: px2em(8, $base-content-size);
 		display: block;
 		position: relative;
 		background: themed(f-0);
-		// margin-top: $t-margin-top;
+    margin-bottom: px2em(24, $base-content-size);
 
 		input {
 			@include reset-input();

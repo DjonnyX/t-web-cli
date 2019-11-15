@@ -1,7 +1,7 @@
 # t-web-cli
 
 ### features:
-- Fully developed from scratch UI Framework
+- Fully developed from scratch UI Framework (I called it a cyclone)
 - Objects optimization
 - event system
 - html templates serializer

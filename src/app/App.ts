@@ -11,7 +11,7 @@ export default class App extends HTMLComponent {
     template: `<t-login></t-login>`,
     selectorName: "root",
     maintainer: {
-      class: "light-blue" // theme name
+      class: "theme-light-blue" // theme name
     },
     cModule: rootModule
   };

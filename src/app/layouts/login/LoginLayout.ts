@@ -15,7 +15,7 @@ export default class LoginLayout extends HTMLComponent {
         <h1 className="t-description__title">Sign in to Telegram</h1>
         <p className="t-description__text">Please confirm your country and enter your phone number.</p>
       </div>
-        <t-input (input)={inputChange} [placeholder]="Phone number"></t-input>
+        <t-input className="primary" (input)={inputChange} [placeholder]="Phone number"></t-input>
         <t-button className="primary" (click)={clickHandler} [label]="Next"></t-button>
       </form>
     </div>`,

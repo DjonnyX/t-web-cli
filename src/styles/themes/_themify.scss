@@ -6,7 +6,7 @@
 	@each $theme-name, $theme-map in $themes {
 		// state names
 		@each $state-name, $state-map in $theme-map {
-			.theme-#{$theme-name} .#{$state-name} & {
+			.theme-#{$theme-name} &.#{$state-name} {
 				$state-val: $state-map;
 				$theme-props: () !global;
 				@each $prop-name, $props-val in $state-map {

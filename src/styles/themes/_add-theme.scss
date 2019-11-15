@@ -1,0 +1,3 @@
+@function add-theme($themes, $theme-name, $theme) {
+	@return map-merge($themes, ("#{$theme-name}": $theme));
+}

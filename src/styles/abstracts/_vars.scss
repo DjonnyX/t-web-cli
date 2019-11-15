@@ -1,4 +1,4 @@
-@import "./utils/px2em";
+@import "../utils/px2em";
 
 $base-content-size: 16;
 $base-padding: px2em(18, $base-content-size);

@@ -1,0 +1,34 @@
+@import "themes.scss";
+
+// @returns a states
+@mixin themify($themes) {
+	// theme names
+	@each $theme-name, $theme-map in $themes {
+		// state names
+		@each $state-name, $state-map in $theme-map {
+			.theme-#{$theme-name} &.#{$state-name} {
+				$state-val: $state-map;
+				$theme-props: () !global;
+				@each $prop-name, $props-val in $state-map {
+					$prop-val: $props-val !global;
+					$theme-props: map-merge(
+						$theme-props,
+						(
+							$prop-name: $props-val
+						)
+					) !global;
+				}
+
+				// set content
+				@content;
+
+				// dispose
+				$theme-props: null !global;
+			}
+		}
+	}
+}
+
+@function themed($key) {
+	@return map-get($theme-props, $key);
+}

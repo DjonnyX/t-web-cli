@@ -1,3 +1,21 @@
+# t-web-cli
+
+### features:
+- Fully developed from scratch UI Framework
+- Objects optimization
+- event system
+- html templates serializer
+- system of modules
+- Theme support
+- change detection strategy (to push)
+- typescript
+- great test coverage
+
+### examples:
+
+Simple component
+
+```ts
 import "../../../styles/components/_button.scss";
 import { IComponentOptions, HTMLComponent } from "../../cyclone/display";
 import tButtonModule from "./TButton.module";
@@ -38,19 +56,11 @@ class TButton extends HTMLComponent {
 		super(TButton.meta);
 	}
 
-	/**
-	 * click handler
-	 * @param {MouseEvent} val
-	 */
 	public clickHandler(e: MouseEvent): void {
 		e.preventDefault();
 		this.click(e);
 	}
 
-	/**
-	 * Event emitter
-	 * @param {MouseEvent} e
-	 */
 	public click(e: MouseEvent): void {
 		if (this._tRipple) {
 			this._tRipple.run(e);
@@ -70,3 +80,36 @@ tButtonModule.modules = {
 	tRippleModule
 };
 export default TButton;
+
+```
+
+Styling
+
+```scss
+$light-blue-color-text-light: #ffffff;
+$light-blue-color-text-dark: #000000;
+$light-blue-color-red: #e53935;
+$light-blue-color-blue: #4ea4f6;
+$light-blue-color-white: #ffffff;
+
+// light-blue theme
+$theme-light-blue: make-theme($light-blue-color-white, $light-blue-color-blue, $light-blue-color-red, $light-blue-color-text-dark, $light-blue-color-text-light);
+
+$themes: (
+	light-blue: $theme-light-blue
+);
+```
+
+component.scss
+```scss
+t-button {
+	@include themify($themes) {
+		background: themed(f-1);
+
+		a {
+		    color: themed(t-1);
+		}
+	}
+}
+
+```

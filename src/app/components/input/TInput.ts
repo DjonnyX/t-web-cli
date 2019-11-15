@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
-import "./TInput.style.scss";
+import "../../../styles/components/_input.scss";
 import { InputComponent, IComponentOptions, HTMLComponent } from "../../cyclone/display";
 import { addClass, removeClass } from "../../cyclone/utils/dom";
 import tInputModule from "./TInput.module";
@@ -9,14 +8,14 @@ class TInput extends InputComponent {
   public static readonly meta: IComponentOptions = {
     template: `
       <label htmlFor={id}>
-        <input (viewChild)={setInputComponent} id={id} (input)={inputInputHandler} (select)="selectHandler" (change)={inputChangeHandler}
+        <input (__viewChild__)={setInputComponent} id={id} (input)={inputInputHandler} (select)="selectHandler" (change)={inputChangeHandler}
           value={value} (focus)={focusHandler} (blur)={blurHandler} (keydown)="{keydownHandler} (pointerdown)="{pointerDownHandler}"></input>
           <div (viewChild)={setCaretComponent} className="t-input__caret"></div>
           <span className={lClass}>{placeholder}</span>
       </label>
     `,
     maintainer: {
-      class: "t-input"
+      class: "t-input",
     },
     selectorName: "t-input",
     cModule: tInputModule

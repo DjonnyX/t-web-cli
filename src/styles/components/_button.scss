@@ -2,17 +2,10 @@
 @import "../themes";
 @import "../utils";
 @import "../abstracts/vars";
-@import "../abstracts/colors";
 
 $ease: cubic-bezier(0.5, 0, 0.5, 1);
 $animation-placeholder: 0.4s $ease;
 $animation-border: 0.2s $ease;
-
-/*$button-color-normal: $color-selected;
-$button-color-focus: $color-selected;
-$button-color-warn: $color-warn;
-$button-color-disabled: $color-disabled;*/
-$button-label-color: rgba($color-text-main, 0.47);
 
 $t-button-min-width: px2em(32, $base-content-size);
 $t-button-line-height: px2em(18, $base-content-size);
@@ -40,15 +33,15 @@ $t-button-padding: px2em(10, $base-content-size) px2em(18, $base-content-size);
 		height: 100%;
 		overflow: hidden;
 		background: none;
-		color: inherit;
-		text-align: inherit;
 
-		@include themify($themes) {
-			& {
-				background: themed("f-0");
+		& {
+			@include themify($themes) {
+				background: themed(f-1);
+			}
 
-				&:disabled {
-					background: rgba(themed("f-0"), 0.1);
+			&:disabled {
+				@include themify($themes) {
+					background: rgba(themed(f-1), 0.1);
 				}
 			}
 		}
@@ -58,8 +51,10 @@ $t-button-padding: px2em(10, $base-content-size) px2em(18, $base-content-size);
 			width: 100%;
 			size: $t-button-font-size;
 			padding: $t-button-label-padding;
-			color: inherit;
-			text-align: inherit;
+			@include themify($themes) {
+				color: themed(t-0);
+			}
+			text-align: center;
 		}
 
 		.t-button__overlay {

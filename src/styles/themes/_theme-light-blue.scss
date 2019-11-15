@@ -1,3 +1,5 @@
+@import "./make-theme";
+
 $light-blue-color-text-light: #ffffff;
 $light-blue-color-text-dark: #000000;
 $light-blue-color-red: #e53935;
@@ -5,4 +7,4 @@ $light-blue-color-blue: #4ea4f6;
 $light-blue-color-white: #ffffff;
 
 // light-blue theme
-$theme-light-blue: set-map(make-theme($light-blue-color-white, $light-blue-color-blue, $light-blue-color-red, $light-blue-color-text-dark, $light-blue-color-text-light));
+$theme-light-blue: make-theme($light-blue-color-white, $light-blue-color-blue, $light-blue-color-red, $light-blue-color-text-dark, $light-blue-color-text-light);

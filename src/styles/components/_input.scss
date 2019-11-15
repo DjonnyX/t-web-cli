@@ -1,14 +1,14 @@
 @import "../base/reset-input";
+@import "../themes";
 @import "../utils/px2em";
 @import "../abstracts/vars";
-@import "../abstracts/colors";
 
-$input-color-normal: $color-normal;
+/*$input-color-normal: $color-normal;
 $input-color-focus: $color-selected;
 $input-color-warn: $color-warn;
 $input-caret-color: $color-selected;
 $input-placeholder-color-focus: $color-selected;
-$input-placeholder-color-normal: rgba($color-text-main, 0.47);
+$input-placeholder-color-normal: rgba($color-text-main, 0.47);*/
 
 $ease: cubic-bezier(0.5, 0, 0.5, 1);
 $animation-placeholder: 0.4s $ease;
@@ -56,13 +56,18 @@ $t-input-radius: px2em(8, $base-content-size);
   margin-top: $t-input-padding-v;
   display: block;
   position: relative;
-  background: inherit;
+  @include themify($themes) {
+    background: themed(t-0);
+  }
   // margin-top: $t-margin-top;
 
   input {
     @include reset-input();
     font-size: $t-input-font-size;
-    color: inherit;
+    
+		@include themify($themes) {
+      color: themed(t-0);
+    }
     /*caret-color: transparent;*/
     z-index: 2;
     margin: 0 $border-sub $border-sub $border-sub;
@@ -83,21 +88,26 @@ $t-input-radius: px2em(8, $base-content-size);
 
   label {
     border-radius: $t-input-radius;
-    border: $border-width solid $input-color-normal;
+    border: $border-width solid;
+		@include themify($themes) {
+      border: themed(t-1);
+      background: themed(t-0);
+    }
     box-sizing: border-box;
     display: flex;
     align-items: center;
     height: $t-input-height;
     width: 100%;
-    background: inherit;
     padding-left: $t-input-padding-h;
     padding-right: $t-input-padding-h;
     margin: 0 $border-sub;
   }
 
   .t-input__placeholder {
+		@include themify($themes) {
+      color: rgba(themed(t-0), 0.47);
+    }
     pointer-events: none;
-    color: $input-color-focus;
     position: absolute;
     left: $t-input-padding-h;
     transition: transform $animation-placeholder,
@@ -120,13 +130,17 @@ $t-input-radius: px2em(8, $base-content-size);
     margin-top: $t-input-padding-v-focus;
 
     .t-input__placeholder {
-      color: $input-placeholder-color-focus;
+      @include themify($themes) {
+        color: rgba(themed(f-1), 1);
+      }
     }
 
     label {
       margin: 0;
       border-width: $border-width-focus;
-      border-color: $input-color-focus;
+      @include themify($themes) {
+        border-color: themed(f-1);
+      }
       transition: border-color $animation-border;
       padding-left: $t-input-padding-h-focus;
       padding-right: $t-input-padding-h-focus;
@@ -134,10 +148,12 @@ $t-input-radius: px2em(8, $base-content-size);
   }
 
   &:not(.focus) {
-    border-color: $input-color-normal;
+		@include themify($themes) {
+      border-color: themed(f-1);
 
-    .t-input__placeholder {
-      color: $input-placeholder-color-normal;
+      .t-input__placeholder {
+        color: themed(t-0);
+      }
     }
   }
 }
